@@ -6,6 +6,8 @@
 #include <dirent.h>
 #include <unistd.h>
 
+#include "font_bin.h"
+
 int main() {
   gp2xInit();
 
