@@ -9,6 +9,7 @@
 
 extern uint16_t* font; // 14x28px
 extern void drawCharacter(uint16_t* dest, int x, int y, uint16_t colour, char c);
+extern void displayPrintf(uint16_t* fb, int x, int y, uint16_t colour, const char* format, ...);
 
 extern bool renderRequired;
 

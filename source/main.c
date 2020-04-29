@@ -5,6 +5,8 @@
 #include <sys/dir.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <stdarg.h>
 
 #include "bootloader.h"
 
@@ -130,6 +132,28 @@ void drawCharacter(uint16_t* fb, int x, int y, uint16_t colour, char c) {
       if(cPx != MAGENTA) {
 	fb[x+i+((y+j)*320)] = colour;
       }
+    }
+  }
+}
+
+void displayPrintf(uint16_t* fb, int x, int y, uint16_t colour, const char* format, ...) {
+  const int bufferSize = 256;
+  char buffer[bufferSize];
+  va_list args;
+  va_start(args, format);
+  vsprintf(buffer, format, args);
+  va_end (args);
+  int currentX = x;
+  int currentY = y;
+
+  for(int i = 0 ; i < bufferSize ; i++) {
+    if(buffer[i] == '\0') return;
+    else if(buffer[i] == '\n') {
+      currentY += 28;
+      currentX = x;
+    } else {
+      drawCharacter(fb, currentX, currentY, colour, buffer[i]);
+      currentX += 14;
     }
   }
 }

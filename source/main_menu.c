@@ -7,7 +7,8 @@ static void render(uint16_t* fb) {
     *(fb+i) = (flip ? 0x1FE0 : 0xF800);
   }
 
-  drawCharacter(fb, 20, 20, 0x0000, 'A');
+  displayPrintf(fb, 20, 20, 0xFFA0, "Adan woz ere: %d\nand still is!", 2020);
+  drawCharacter(fb, 20, 20, 0xFFA0, 'A');
 }
 
 static void handleInput(uint32_t buttonStates, uint32_t buttonPresses) {
