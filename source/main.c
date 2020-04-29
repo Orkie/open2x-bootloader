@@ -6,49 +6,65 @@
 #include <dirent.h>
 #include <unistd.h>
 
-#include "font_bin.h"
+#include "bootloader.h"
+
+#define MAGENTA 0xF81F
+#define BLACK 0x0
+
+// global variables
+bool renderRequired = true;
+
+// current view
+View* currentView;
+
+// settings
+bool autoloadKernel;
+
+void loadSettings() {
+  // TODO - get these from the final NAND block of the bootloader
+  autoloadKernel = false;
+}
 
 int main() {
   gp2xInit();
+  uart_printf("\r\n\n\n**********************************\r\n* Open2x Bootloader  *\r\n**********************************\r\n\r\n");
 
-  uart_printf("\r\n\n\n**********************************\r\n* Welcome to Orcus test program  *\r\n**********************************\r\n\r\n");
-
-  void* a = malloc(100);
-  void* b = malloc(100);
-  uart_printf("first malloc at: 0x%08x\r\n", a);
-  uart_printf("second malloc at: 0x%08x\r\n", b);
+  if(autoloadKernel && !(btnState()&START)) {
+    runKernelFromNand();
+    // TODO - if we reach this point, loading kernel has failed and we should show something on the screen
+  }
   
-  uart_printf("Adan is %d\r\n", 103);
-  uart_printf("Bob is %d\r\n", 583);
-
   uint16_t* fb0 = malloc(320*240*2);
-  uart_printf("Allocated framebuffer 0 at %p\r\n", fb0);  
   uint16_t* fb1 = malloc(320*240*2);
-  uart_printf("Allocated framebuffer 1 at %p\r\n", fb1);
 
   rgbSetPixelFormat(RGB565);
-  uart_printf("Pixel format is now RGB565\r\n");
-  
   rgbRegionNoBlend(REGION1);
-  uart_printf("No blending REGION1\r\n");
-
   rgbSetRegionPosition(REGION1, 0, 0, 320, 240);
-  uart_printf("Set REGION1 position\r\n");
-
+    for(int i = 320*240 ; i-- ; ) {
+    *(fb1+i) = *(fb0+i) = 0x0;
+  }
   rgbSetFbAddress((void*)fb0);
-  uart_printf("Set FB address\r\n");
-
   rgbToggleRegion(REGION1, true);
-  uart_printf("Enable RGB REGION1\r\n");
 
-  //  uart_printf("Waiting for 5 seconds\r\n");
-  //  usleep(5000000);
-  //  uart_printf("Finished waiting\r\n");
-  
-  for(int i = 320*240 ; i-- ; )
-    *(fb0+i) = 0x1FE0;
-  for(int i = 320*240 ; i-- ; )
-    *(fb1+i) = 0xF800;
+  currentView = &MainMenu;
+
+  uint16_t* currentFb = fb0;
+  uint16_t* nextFb = fb1;
+  uint32_t previousButtonState = 0;
+  while(1) {
+    uint32_t currentButtonState = btnState();
+    currentView->handleInput(currentButtonState, currentButtonState&(~previousButtonState));
+    previousButtonState = currentButtonState;
+
+    if(renderRequired) {
+      currentView->render(nextFb);
+      lcdWaitNextVSync();
+      rgbSetFbAddress((void*)nextFb);
+      uint16_t* tmp = currentFb;
+      currentFb = nextFb;
+      nextFb = tmp;
+    }
+  }
 
   uart_printf("Testing for SD card\r\n");
   if(fatInitDefault()) {
