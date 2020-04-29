@@ -7,6 +7,9 @@
 #include "font_bin.h"
 #include "kernel.h"
 
+extern uint16_t* font; // 14x28px
+extern void drawCharacter(uint16_t* dest, int x, int y, uint16_t colour, char c);
+
 extern bool renderRequired;
 
 #define triggerRender() {renderRequired = true;}
