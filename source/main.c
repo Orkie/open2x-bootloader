@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include "font_bin.h"
 #include "bootloader.h"
 
 #define MAGENTA 0xF81F
@@ -15,7 +16,6 @@
 
 // global variables
 bool renderRequired = true;
-uint16_t* font = (uint16_t*) font_bin;
 
 // current view
 View* currentView;
@@ -51,6 +51,7 @@ int main() {
   }
   rgbSetFbAddress((void*)fb0);
   rgbToggleRegion(REGION1, true);
+  rgbSetFont((uint16_t*)font_bin, FONT_WIDTH, FONT_HEIGHT);
 
   currentView = &MainMenu;
 
@@ -118,45 +119,5 @@ int main() {
     if(btn & START) rgbSetFbAddress(fb0);
     else if(btn & SELECT) return 0;
     else rgbSetFbAddress(fb1);
-  }
-}
-
-#define CHARS 95
-
-void drawCharacter(uint16_t* fb, int x, int y, uint16_t colour, char c) {
-  if(c < ' ' || c > '~') {
-    return;
-  }
-  
-  for(int j = 0 ; j < CHAR_HEIGHT ; j++) {
-    for(int i = 0 ; i < CHAR_WIDTH ; i++) {
-      uint16_t cPx = font[j*(CHARS*CHAR_WIDTH)+i+((c-' ')*CHAR_WIDTH)];
-      if(cPx != MAGENTA && (x+i) < 320) {
-	fb[x+i+((y+j)*320)] = colour;
-      }
-    }
-  }
-}
-
-void displayPrintf(uint16_t* fb, int x, int y, uint16_t colour, const char* format, ...) {
-  const int bufferSize = 256;
-  char buffer[bufferSize];
-  va_list args;
-  va_start(args, format);
-  vsprintf(buffer, format, args);
-  va_end (args);
-  int currentX = x;
-  int currentY = y;
-
-  for(int i = 0 ; i < bufferSize ; i++) {
-    if(buffer[i] == '\0') return;
-    else if(currentX >= 320) { continue; }
-    else if(buffer[i] == '\n') {
-      currentY += CHAR_HEIGHT;
-      currentX = x;
-    } else {
-      drawCharacter(fb, currentX, currentY, colour, buffer[i]);
-      currentX += CHAR_WIDTH;
-    }
   }
 }

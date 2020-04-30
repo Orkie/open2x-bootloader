@@ -4,21 +4,12 @@
 #include <gp2xregs.h>
 #include <gp2xtypes.h>
 
-#include "font_bin.h"
 #include "background_bin.h"
 #include "kernel.h"
 
 #define VERSION "v1.0"
 
-
 #define SIZEOF(a) sizeof(a)/sizeof(*a)
-
-extern uint16_t* font; // 14x28px
-#define CHAR_WIDTH 6
-#define CHAR_HEIGHT 12
-
-extern void drawCharacter(uint16_t* dest, int x, int y, uint16_t colour, char c);
-extern void displayPrintf(uint16_t* fb, int x, int y, uint16_t colour, const char* format, ...);
 
 extern bool renderRequired;
 
@@ -37,5 +28,8 @@ typedef struct {
   char* title;
   void (*callback)();
 } MenuItem;
+
+#define FONT_HEIGHT 12
+#define FONT_WIDTH 6
 
 #endif
