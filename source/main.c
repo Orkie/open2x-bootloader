@@ -30,7 +30,7 @@ void loadSettings() {
 
 int main() {
   gp2xInit();
-  uart_printf("\n\n**********************************\n* Open2x Bootloader              *\n**********************************\n");
+  uart_printf("\n\n**********************************\nOpen2x Bootloader %s\n**********************************\n", VERSION);
   uart_printf("Auto load kernel: %s\n", autoloadKernel ? "on" : "off");
   uart_printf("**********************************\n");
   
@@ -121,15 +121,17 @@ int main() {
   }
 }
 
+#define CHARS 95
+
 void drawCharacter(uint16_t* fb, int x, int y, uint16_t colour, char c) {
   if(c < ' ' || c > '~') {
     return;
   }
   
-  for(int j = 0 ; j < 28 ; j++) {
-    for(int i = 0 ; i < 14 ; i++) {
-      uint16_t cPx = font[j*1330+i+((c-' ')*14)];
-      if(cPx != MAGENTA) {
+  for(int j = 0 ; j < CHAR_HEIGHT ; j++) {
+    for(int i = 0 ; i < CHAR_WIDTH ; i++) {
+      uint16_t cPx = font[j*(CHARS*CHAR_WIDTH)+i+((c-' ')*CHAR_WIDTH)];
+      if(cPx != MAGENTA && (x+i) < 320) {
 	fb[x+i+((y+j)*320)] = colour;
       }
     }
@@ -148,12 +150,13 @@ void displayPrintf(uint16_t* fb, int x, int y, uint16_t colour, const char* form
 
   for(int i = 0 ; i < bufferSize ; i++) {
     if(buffer[i] == '\0') return;
+    else if(currentX >= 320) { continue; }
     else if(buffer[i] == '\n') {
-      currentY += 28;
+      currentY += CHAR_HEIGHT;
       currentX = x;
     } else {
       drawCharacter(fb, currentX, currentY, colour, buffer[i]);
-      currentX += 14;
+      currentX += CHAR_WIDTH;
     }
   }
 }

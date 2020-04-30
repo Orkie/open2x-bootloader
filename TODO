@@ -51,7 +51,7 @@ static struct mtd_partition partition_info[] = {
 // imagemagick render text in font to build a spritesheet?
 e.g. terminus font is bdf
 // need this list of characters in order of ascii
-convert -font ter-u28n.bdf -pointsize 28 label:"\\ \!\"#$\\%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_\`abcdefghijklmnopqrstuvwxyz{|}~" font.png
+convert -font ter-u28n.bdf -pointsize 28 label:"\\ \!\"#$\\%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_\`abcdefghijklmnopqrstuvwxyz{|}~" -kerning 0 font.png
 
 
 Executable header for bootloader -
@@ -65,4 +65,7 @@ Load address - where in memory to copy code
 code should have 0xdeadbeef at end of crt0. The bootloader will copy from start of code to 0xdeadbeef to 0x0 in memory, then jump to 0x0 - this lets us load code at any arbitrary address while correctly setting up vector table, so we can load e.g. gp2xboot.img as an executable just by affixing it with the appropriate header
 
 
+echo "\\ \!\"#$\\%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_\`abcdefghijklmnopqrstuvwxyz{|}~" | ./text2img_fixed.sh-pointsize 28 -line 95
 
+
+ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
