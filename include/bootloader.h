@@ -32,4 +32,23 @@ typedef struct {
 #define FONT_HEIGHT 12
 #define FONT_WIDTH 6
 
+typedef struct {
+  int (*launch)(char* path);
+} InternalInterpreter;
+
+typedef struct {
+  char* pathOfInterpreter;
+} ExternalInterpreter;
+  
+union InterpreterDefinition {
+  InternalInterpreter internal;
+  ExternalInterpreter external;
+};
+
+typedef struct {
+  char extension[3];
+  bool isInternal;
+  union InterpreterDefinition def;
+} Interpreter;
+
 #endif

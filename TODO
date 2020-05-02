@@ -48,24 +48,26 @@ static struct mtd_partition partition_info[] = {
 
 // should be trivial, the code segment is easy to identify in a disassembly, just need to scan for the binary
 
-// imagemagick render text in font to build a spritesheet?
-e.g. terminus font is bdf
-// need this list of characters in order of ascii
-convert -font ter-u28n.bdf -pointsize 28 label:"\\ \!\"#$\\%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_\`abcdefghijklmnopqrstuvwxyz{|}~" -kerning 0 font.png
 
 
 Executable header for bootloader -
 Magic number to identify file - GP2XRAW1.0
 32 character title
-Load address - where in memory to copy code
-8 bytes of additional information - e.g. compressed flag, is kernel
-32x32 icon in rgb565
-[start of code]
+8 bytes of additional information - e.g. compressed flag, is kernel, should pass parameters
+24x24 icon in rgb565
+address where to store param list and max length of list
+number of load entries
+load entry 1 - dest address, length
+load entry 2... e.g. for loading 920t then 940t code
+[start of 920t code]
+[start of 940t code]
 
 code should have 0xdeadbeef at end of crt0. The bootloader will copy from start of code to 0xdeadbeef to 0x0 in memory, then jump to 0x0 - this lets us load code at any arbitrary address while correctly setting up vector table, so we can load e.g. gp2xboot.img as an executable just by affixing it with the appropriate header
 
+interpreter list with file extension to 'interpreter' - builtin
+in sd root, also an interpreter list where you can override and add supported extensions, which invoke a GPR file at a given path on the SD with the file as a parameter
+e.g. allows one to set up GBA or FXE or IMG as supported file types
 
-echo "\\ \!\"#$\\%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_\`abcdefghijklmnopqrstuvwxyz{|}~" | ./text2img_fixed.sh-pointsize 28 -line 95
 
-
+Font:
  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
