@@ -3,13 +3,17 @@
 
 int selected = 0;
 
-void doNothing() {
-  uart_printf("selected this\n");
+static void doNothing() {
+  uart_printf("selected browse SD card\n");
+}
+
+static void bootFromNand() {
+  runKernelFromNand();
 }
 
 const MenuItem menu[] = {
-  {.title = "Browse SD card", .callback = NULL},
-  {.title = "Boot from NAND", .callback = &doNothing},
+  {.title = "Browse SD card", .callback = &doNothing},
+  {.title = "Boot from NAND", .callback = &bootFromNand},
   {.title = "Settings", .callback = NULL}
 };
 

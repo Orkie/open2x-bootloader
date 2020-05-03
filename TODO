@@ -10,7 +10,8 @@ Orcus:
 	* ARM940T - this will require implementing the locks in __syscalls, to prevent mallocing the same thing (and also so you can actually use mutexes etc. if newlib provides them!). probably a shared heap ptr too? Will need to translate between the two
 	* F200 detection
 	* F200 touchscreen
-
+	* Revisit the NAND loading code in crt0, needs to check for bit15 in status reg instead of bit7, and then set reg to 0x8080 afterwards to clear that bit
+	
 static struct mtd_partition partition_info[] = {
         {
                 name:           "Bootloader",
@@ -71,3 +72,7 @@ e.g. allows one to set up GBA or FXE or IMG as supported file types
 
 Font:
  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+
+                nand_read_func(0x1000000, 0x80000,0xB0000);
+
+

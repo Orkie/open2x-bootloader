@@ -33,7 +33,7 @@ CFLAGS	:=	-Wall -O2 -mtune=arm9tdmi \
 CFLAGS	+=	$(INCLUDE)
 
 AFLAGS	:=	$(ARCH)
-LDFLAGS	=	$(ARCH) -Wl,-Map,$(notdir $@).map -Xlinker --section-start=.text=0x03E00000 -Xlinker --defsym=__start_of_heap=0x100000 -Xlinker --defsym=__end_of_heap=0x03E00000
+LDFLAGS	=	$(ARCH) -Wl,-Map,$(notdir $@).map -Xlinker --section-start=.text=0x3E00000 -Xlinker --defsym=__start_of_heap=0x100000 -Xlinker --defsym=__end_of_heap=0x3E00000
 
 #---------------------------------------------------------------------------------
 # path to tools - this can be deleted if you set the path in windows
