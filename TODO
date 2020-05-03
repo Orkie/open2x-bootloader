@@ -76,3 +76,4 @@ Font:
                 nand_read_func(0x1000000, 0x80000,0xB0000);
 
 
+0x3100000 - FB location which won't get covered by kernel

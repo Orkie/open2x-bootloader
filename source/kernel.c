@@ -2,6 +2,8 @@
 #include <orcus.h>
 #include <gp2xregs.h>
 #include "miniz.h"
+#include "bootloader.h"
+#include "background_bin.h"
 
 #define KERNEL_REGION_BYTES 0x120000
 #define UBOOT_MAGIC_NUMBER 0x27051956
@@ -39,8 +41,15 @@ void runKernelFromNand() {
   nandRead(0x80000, KERNEL_REGION_BYTES>>9, dest);
   uart_printf("Loaded data from NAND at 0x%x\n", dest);
   uint32_t entry;
+
+  uint16_t* fb = (uint16_t*) 0x3100000;
+  memcpy((void*) fb, (void*) background_bin, 320*240*2);
+  rgbPrintf(fb, (320-(15*FONT_WIDTH))>>1, 32, 0x0000, "Starting kernel");
+  rgbSetFbAddress((void*)fb);
+  
   if(!prepareImage(dest, &entry)) {
     uart_printf("Executing kernel at 0x%x\n", entry);
+    
     asm volatile("ldr r0, =0x0");
     asm volatile("ldr r1, =395");
     asm volatile("ldr r2, =0x0");
