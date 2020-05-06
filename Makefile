@@ -25,7 +25,7 @@ INCLUDES	:=	include
 #---------------------------------------------------------------------------------
 ARCH	:=	
 
-CFLAGS	:=	-Wall -O2 -mtune=arm9tdmi \
+CFLAGS	:=	-g -Wall -O2 -mtune=arm9tdmi \
 		-fomit-frame-pointer \
 		-ffast-math \
 		$(ARCH)

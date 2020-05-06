@@ -18,11 +18,14 @@ extern bool renderRequired;
 typedef struct {
   void (*render)(uint16_t*);
   void (*handleInput)(uint32_t, uint32_t);
+  int (*init)(char* errorMessage);
 } View;
 
-extern View* currentView;
+extern void transitionView(View* to);
+extern void clearError();
 
 extern View MainMenu;
+extern View Filer;
 
 typedef struct {
   char* title;
@@ -31,6 +34,8 @@ typedef struct {
 
 #define FONT_HEIGHT 12
 #define FONT_WIDTH 6
+#define RED 0xF800
+#define BLACK 0x0000
 
 typedef struct {
   int (*launch)(char* path);
