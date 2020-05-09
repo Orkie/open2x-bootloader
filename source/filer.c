@@ -1,10 +1,11 @@
+#include <stdio.h>
 #include <string.h>
 #include <fat.h>
 #include <stdlib.h>
 #include <dirent.h>
 #include "bootloader.h"
 
-#define MAX_ON_SCREEN 10
+#define MAX_ON_SCREEN 9
 
 typedef struct FileList {
   char name[NAME_MAX];
@@ -108,8 +109,6 @@ static int currentDirectoryLength = 0;
 
 static FileList* updateCurrentDirectoryListing() {
   // TODO sort such that directories are first, in alphabetical order, followed by files, in alphabetical order
-  // need a show/hide unsupported extentions feature
-  // filter out . and ..
   
   if(currentDirectoryListing != NULL) {
     freeList(currentDirectoryListing);
@@ -124,6 +123,9 @@ static FileList* updateCurrentDirectoryListing() {
   dp = opendir(path);
   if(dp != NULL) {
     while ((ep = readdir(dp))) {
+      if(strcmp(ep->d_name, ".") == 0 || strcmp(ep->d_name, "..") == 0) {
+	continue;
+      }
       currentDirectoryLength++;
       out = newLink(ep->d_name, ep->d_type == DT_DIR, out);
     }
@@ -166,19 +168,26 @@ static void render(uint16_t* fb) {
   int numberRendered = 0;
   FileList* next = nth(currentDirectoryListing, startRenderingFrom);
 
+  char* path = pathFromList(currentPath->next, false);
+  rgbPrintf(fb, 32, 32, 0x0000, "/%s", path);
+  free(path);
+
+  char buf[10];
+  sprintf(buf, "%.3d / %.3d", selected > 998 || selected < 0 ? 0 : selected+1, currentDirectoryLength > 999 || currentDirectoryLength < 0 ? 0 : currentDirectoryLength);
+  rgbPrintf(fb, 299-(FONT_WIDTH*9), 174-FONT_HEIGHT, BLACK, "%s", buf);
+
   while(next != NULL && numberRendered < MAX_ON_SCREEN) {
     int i = startRenderingFrom + numberRendered;
     
     if(selected == i) {
-      rgbPrintf(fb, 32, 56+(FONT_HEIGHT*i), RED, "* ");
+      rgbPrintf(fb, 32, 56+(FONT_HEIGHT*numberRendered), RED, "* ");
     }
-    rgbPrintf(fb, 32+FONT_WIDTH*2, 56+(FONT_HEIGHT*i), selected == i ? RED : BLACK, next->name);
+    rgbPrintf(fb, 32+FONT_WIDTH*2, 56+(FONT_HEIGHT*numberRendered), selected == i ? RED : BLACK, next->name);
     
     numberRendered++;
     next = next->next;
   }
-
-  // TODO - render e.g. "2 / 20" in the corner to show how many files there are in this directory if it is a large one
+  // need a show/hide unsupported extentions feature
   // TODO - render instructions in bottom area
 }
 
