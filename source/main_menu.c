@@ -1,7 +1,7 @@
 #include <string.h>
 #include "bootloader.h"
 
-int selected = 0;
+static int selected = 0;
 
 static void browseSd() {
   transitionView(&Filer);
