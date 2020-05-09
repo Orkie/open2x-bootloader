@@ -16,7 +16,7 @@
 bool renderRequired = true;
 
 // current view
-View* currentView;
+View* currentView = NULL;
 char errorMessage[256];
 bool displayError = false;
 
@@ -100,6 +100,8 @@ int main() {
       uint16_t* tmp = currentFb;
       currentFb = nextFb;
       nextFb = tmp;
+
+      renderRequired = false;
     }
   }
 
@@ -153,6 +155,10 @@ int main() {
 }
 
 void transitionView(View* to) {
+  if(currentView != NULL && currentView->deinit != NULL) {
+    currentView->deinit();
+  }
+  
   if(to->init != NULL && to->init(errorMessage)) {
     displayError = true;
   } else {

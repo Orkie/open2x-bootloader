@@ -19,6 +19,7 @@ typedef struct {
   void (*render)(uint16_t*);
   void (*handleInput)(uint32_t, uint32_t);
   int (*init)(char* errorMessage);
+  void (*deinit)();
 } View;
 
 extern void transitionView(View* to);

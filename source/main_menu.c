@@ -54,5 +54,6 @@ static void handleInput(uint32_t buttonStates, uint32_t buttonPresses) {
 View MainMenu = {
  &render,
  &handleInput,
+ NULL,
  NULL
 };		       
