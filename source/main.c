@@ -170,3 +170,9 @@ void transitionView(View* to) {
 void clearError() {
   displayError = false;
 }
+
+void showError(const char* msg) {
+  strcpy(errorMessage, msg);
+  displayError = true;
+  triggerRender();
+}

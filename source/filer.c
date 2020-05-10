@@ -255,8 +255,13 @@ static void selectFile() {
     selected = startRenderingFrom = 0;
     triggerRender();
   } else {
-    // TODO
-    uart_printf("TODO Can we execute this file?\n");
+    append(currentPath, newLink(selectedFile->name, true, NULL));
+    
+    // TODO - we need to look up the interpreter in ext->interp map, for now hardcode to o2x    
+    O2xInterpreter.def.internal->launch(pathFromList(currentPath, false));
+
+    // failed
+    pop(currentPath);
   }
 }
 

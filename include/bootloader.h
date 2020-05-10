@@ -24,6 +24,7 @@ typedef struct {
 
 extern void transitionView(View* to);
 extern void clearError();
+extern void showError(const char* msg);
 
 extern View MainMenu;
 extern View Filer;
@@ -40,7 +41,7 @@ typedef struct {
 
 typedef struct {
   int (*launch)(char* path);
-  int (*getName)(char* name);
+  int (*getName)(char* path, char* dest);
 } InternalInterpreter;
 
 typedef struct {
@@ -57,5 +58,14 @@ typedef struct {
   bool isInternal;
   union InterpreterDefinition def;
 } Interpreter;
+
+extern Interpreter O2xInterpreter;
+
+#define JMP(addr) \
+    __asm__("mov pc,%0" \
+            : /*output*/ \
+            : /*input*/ \
+            "r" (addr) \
+           );
 
 #endif

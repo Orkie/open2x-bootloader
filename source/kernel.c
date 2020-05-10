@@ -29,13 +29,6 @@ typedef struct {
 int prepareImage(void* img, uint32_t* entry);
 int gunzip(uint8_t* data, unsigned int length, void* dest);
 
-#define JMP(addr) \
-    __asm__("mov pc,%0" \
-            : /*output*/ \
-            : /*input*/ \
-            "r" (addr) \
-           );
-
 void runKernelFromNand() {
   void* dest = malloc(KERNEL_REGION_BYTES);
   nandRead(0x80000, KERNEL_REGION_BYTES>>9, dest);
