@@ -40,6 +40,7 @@ typedef struct {
 
 typedef struct {
   int (*launch)(char* path);
+  int (*getName)(char* name);
 } InternalInterpreter;
 
 typedef struct {
@@ -47,8 +48,8 @@ typedef struct {
 } ExternalInterpreter;
   
 union InterpreterDefinition {
-  InternalInterpreter internal;
-  ExternalInterpreter external;
+  InternalInterpreter* internal;
+  ExternalInterpreter* external;
 };
 
 typedef struct {

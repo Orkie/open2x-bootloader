@@ -52,8 +52,7 @@ static struct mtd_partition partition_info[] = {
 
 
 Executable header for bootloader -
-Magic number to identify file - GP2XRAW1.0
-32 character title
+Magic number to identify file - O2X1
 8 bytes of additional information - e.g. compressed flag, is kernel, should pass parameters
 24x24 icon in rgb565
 address where to store param list and max length of list
