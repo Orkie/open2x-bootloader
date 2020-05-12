@@ -67,6 +67,24 @@ static int launch(char* path) {
     return 4;
   }
 
+  uint32_t* paramAddr = (uint32_t*) header.paramAddr;
+  if(header.paramLength == sizeof(int)) {
+     uart_printf("Passing 0 parameters", (paramAddr+1));
+    *paramAddr = 0;    
+  } else if(header.paramLength > (sizeof(uint32_t)*3)) {
+    uart_printf("Setting argv[0] at 0x%x\n", (paramAddr+1));
+    *paramAddr = 1;
+    paramAddr++;
+    *paramAddr = (uint32_t) paramAddr+(sizeof(uint32_t)*2);
+    paramAddr++;
+    *paramAddr = (uint32_t) NULL;
+    paramAddr++;
+
+    strncpy((char*)paramAddr, path, header.paramLength-(sizeof(uint32_t)*3));
+  } else {
+    uart_printf("Not setting parameters\n");
+  }
+
   O2xSection sectionHeader;
   for(int i  = 0 ; i < header.numberOfSections ; i++) {
     if(fread(&sectionHeader, sizeof(O2xSection), 1, fp) != 1) {
