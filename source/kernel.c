@@ -29,18 +29,16 @@ typedef struct {
 int prepareImage(void* img, uint32_t* entry);
 int gunzip(uint8_t* data, unsigned int length, void* dest);
 
-void runKernelFromNand() {
-  void* dest = malloc(KERNEL_REGION_BYTES);
-  nandRead(0x80000, KERNEL_REGION_BYTES>>9, dest);
-  uart_printf("Loaded data from NAND at 0x%x\n", dest);
+int launchKernel(void* image) {
   uint32_t entry;
 
   uint16_t* fb = (uint16_t*) 0x3100000;
   memcpy((void*) fb, (void*) background_bin, 320*240*2);
   rgbPrintf(fb, (320-(15*FONT_WIDTH))>>1, 32, 0x0000, "Starting kernel");
   rgbSetFbAddress((void*)fb);
-  
-  if(!prepareImage(dest, &entry)) {
+
+  int result = prepareImage(image, &entry);
+  if(!result) {
     uart_printf("Executing kernel at 0x%x\n", entry);
     
     asm volatile("ldr r0, =0x0");
@@ -48,9 +46,21 @@ void runKernelFromNand() {
     asm volatile("ldr r2, =0x0");
     JMP(entry)
   }
-  
-  free(dest);
-  // TODO -failed
+  return result;
+}
+
+void* loadKernelFromNand() {
+  void* dest = malloc(KERNEL_REGION_BYTES);
+  nandRead(0x80000, KERNEL_REGION_BYTES>>9, dest);
+  uart_printf("Loaded data from NAND at 0x%x\n", dest);
+  return dest;
+}
+
+int launchKernelFromNand() {
+  void* image = loadKernelFromNand();
+  int result = launchKernel(image);
+  free(image);
+  return result;
 }
 
 int prepareImage(void* img, uint32_t* entry) {
@@ -76,7 +86,7 @@ int prepareImage(void* img, uint32_t* entry) {
 
   if(header->ih_comp == 0) {
     uart_printf("Not compressed\n");
-    // TODO - copy to destination
+    memcpy((void*)B2L(header->ih_load), startOfData, B2L(header->ih_size));
   } else if(header->ih_comp == 1) {
     uart_printf("GZip compressed\n");
 

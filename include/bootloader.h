@@ -41,7 +41,6 @@ typedef struct {
 
 typedef struct {
   int (*launch)(char* path);
-  int (*getName)(char* path, char* dest);
 } InternalInterpreter;
 
 typedef struct {
@@ -54,12 +53,13 @@ union InterpreterDefinition {
 };
 
 typedef struct {
-  char extension[3];
+  char* extension;
   bool isInternal;
   union InterpreterDefinition def;
 } Interpreter;
 
 extern Interpreter O2xInterpreter;
+extern Interpreter KernelInterpreter;
 
 #define JMP(addr) \
     __asm__("mov pc,%0" \

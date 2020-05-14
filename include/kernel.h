@@ -2,6 +2,8 @@
 #define __KERNEL_H
 
 // will not return if successful
-extern void runKernelFromNand();
+extern void* loadKernelFromNand();
+extern int launchKernel(void* image);
+extern int launchKernelFromNand();
 
 #endif

@@ -2,77 +2,14 @@
 | TODO |
 +------+
 
-Orcus:
-	* LCD functions - blitter, yuv
-	* Audio
-	* SD card - works and integrated with libfat, but needs improvement to be more reliable
-	* NAND
-	* ARM940T - this will require implementing the locks in __syscalls, to prevent mallocing the same thing (and also so you can actually use mutexes etc. if newlib provides them!). probably a shared heap ptr too? Will need to translate between the two
-	* F200 detection
-	* F200 touchscreen
-	* Revisit the NAND loading code in crt0, needs to check for bit15 in status reg instead of bit7, and then set reg to 0x8080 afterwards to clear that bit
-	
-static struct mtd_partition partition_info[] = {
-        {
-                name:           "Bootloader",
-                size:           0x80000,
-                offset:         0,
-                mask_flags:     MTD_WRITEABLE,                          
-        }, {
-                name:           "Kernel",
-                size:           0x120000,
-                offset:         MTDPART_OFS_APPEND,
-        }, {
-                name:           "Param",
-                size:           0x60000,                                        
-                offset:         MTDPART_OFS_APPEND,
-        }, {
-                name:           "Filesystem",
-                size:           MTDPART_SIZ_FULL,                                       
-                offset:         MTDPART_OFS_APPEND,
-        }
-};
+Move text address down slightly to allow running of GPH u-boot
+Load interpreters from SD
+Write uboot kernel interpreter
+Display icons on filer
+Filter page navigation
+Debounce button presses - and allow repeat
+Settings for autoboot linux from nand, autoboot autoboot.o2x from SD, display icons
+Sort out error message
+Display UI controls somewhere
 
-// Not convinced the boot params are needed for executing a gp2x kernel
-        /* arch number of MMSP20-Board */
-        gd->bd->bi_arch_number = 395;
-
-        /* adress of boot parameters */
-        gd->bd->bi_boot_params = 0x00100100;
-
-
-// need to pad bootloader to 0x80000 bytes so we make sure to erase the complete area. We should then reserve the final 512 bytes for config
-
-// when loading uboot from SD card, need to check the first few bytes for 0x03E0... or whatever to find RESET vector, and load at that address
-
-// may need to try to obligerate code for loading from nand too if we are booting from SD
-
-// should be trivial, the code segment is easy to identify in a disassembly, just need to scan for the binary
-
-
-
-Executable header for bootloader -
-Magic number to identify file - O2X1
-8 bytes of additional information - e.g. compressed flag, is kernel, should pass parameters
-24x24 icon in rgb565
-address where to store param list and max length of list
-number of load entries
-load entry 1 - dest address, length
-load entry 2... e.g. for loading 920t then 940t code
-[start of 920t code]
-[start of 940t code]
-
-code should have 0xdeadbeef at end of crt0. The bootloader will copy from start of code to 0xdeadbeef to 0x0 in memory, then jump to 0x0 - this lets us load code at any arbitrary address while correctly setting up vector table, so we can load e.g. gp2xboot.img as an executable just by affixing it with the appropriate header
-
-interpreter list with file extension to 'interpreter' - builtin
-in sd root, also an interpreter list where you can override and add supported extensions, which invoke a GPR file at a given path on the SD with the file as a parameter
-e.g. allows one to set up GBA or FXE or IMG as supported file types
-
-
-Font:
- !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
-
-                nand_read_func(0x1000000, 0x80000,0xB0000);
-
-
-0x3100000 - FB location which won't get covered by kernel
+- fix crt0 run bootloader code to use nand interrupt flag which is more reliable, see orcus for C equivalent

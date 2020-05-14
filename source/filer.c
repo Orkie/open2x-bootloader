@@ -144,11 +144,14 @@ static FileList* updateCurrentDirectoryListing() {
 static int startRenderingFrom = 0;
 static int selected = 0;
 
+#define INTERPRETERS_MAX 130
+static Interpreter* interpreters[INTERPRETERS_MAX];
+
 static int init(char* error) {
   if(!fatInitDefault()) {
     strcpy(error, "No SD card detected.");
     return 1;
-  }
+  }   
 
   currentPath = newLink("sd:", true, NULL);
   updateCurrentDirectoryListing();
@@ -156,6 +159,11 @@ static int init(char* error) {
   selected = startRenderingFrom = 0;
 
   // TODO load interpreter list from SD and merge into builtin list
+  for(int i = INTERPRETERS_MAX ; i-- ; ) {
+    interpreters[i] = NULL;
+  }
+  interpreters[0] = &O2xInterpreter;
+  interpreters[1] = &KernelInterpreter;
   
   return 0;
 }
@@ -255,11 +263,34 @@ static void selectFile() {
     selected = startRenderingFrom = 0;
     triggerRender();
   } else {
-    append(currentPath, newLink(selectedFile->name, true, NULL));
     
-    // TODO - we need to look up the interpreter in ext->interp map, for now hardcode to o2x    
-    O2xInterpreter.def.internal->launch(pathFromList(currentPath, false));
+    char* selectedFileExtension = strrchr(selectedFile->name, '.')+1;
+    if(selectedFileExtension == NULL) {
+      showError("File has no extension");
+      return;
+    }
 
+    Interpreter* interpreter = NULL;
+    for(int i = INTERPRETERS_MAX ; i-- ; ) { // done from the end so you can override the builtins
+      if(interpreters[i] != NULL && strcmp(selectedFileExtension, interpreters[i]->extension) == 0) {
+	interpreter = interpreters[i];
+	break;
+      }
+    }
+
+    if(interpreter == NULL) {
+      showError("No interpreter");
+      return;
+    }
+    
+    append(currentPath, newLink(selectedFile->name, true, NULL));
+
+    if(interpreter->isInternal) {
+      interpreter->def.internal->launch(pathFromList(currentPath, false));
+    } else {
+      // TODO
+    }
+    
     // failed
     pop(currentPath);
   }

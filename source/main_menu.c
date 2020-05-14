@@ -8,7 +8,7 @@ static void browseSd() {
 }
 
 static void bootFromNand() {
-  runKernelFromNand(); // TODO - we want to be able to set either boot from a gp2xkernel.img in SD root, or from NAND. If SD fails, offer NAND
+  launchKernelFromNand(); // TODO - we want to be able to set either boot from a gp2xkernel.img in SD root, or from NAND. If SD fails, offer NAND
 }
 
 const MenuItem menu[] = {

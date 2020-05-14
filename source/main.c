@@ -35,7 +35,7 @@ int main() {
   uart_printf("**********************************\n");
 
   if(autoloadKernel && !(btnState()&START)) {
-    runKernelFromNand();
+    launchKernelFromNand();
     uart_printf("Failed to load kernel from NAND!\n");
     // TODO - if we reach this point, loading kernel has failed and we should show something on the screen
   }

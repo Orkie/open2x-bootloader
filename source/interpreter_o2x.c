@@ -21,32 +21,6 @@ typedef struct {
   uint8_t numberOfSections;
 } O2xHeader;
 
-static int getName(char* path, char* dest) {
-  FILE* fp = fopen(path, "rb");
-  if(fp == NULL) {
-    showError("Could not open file");
-    return 1;
-  }
-
-  O2xHeader header;
-  if(fread(&header, sizeof(O2xHeader), 1, fp) != 1) {
-    showError("Could not read from file");
-    fclose(fp);
-    return 2;
-  }
-
-  if(header.magic != O2X_MAGIC) {
-    showError("Not a valid O2X file");
-    fclose(fp);
-    return 3;
-  }
-  
-  strncpy(dest, header.name, 32);
-  
-  fclose(fp);
-  return 0;
-}
-
 static int launch(char* path) {
   FILE* fp = fopen(path, "rb");
   if(fp == NULL) {
@@ -123,8 +97,7 @@ static int launch(char* path) {
 }
 
 InternalInterpreter O2xInternalInterpreter = {
-  &launch,
-  &getName
+  &launch
 };
 
 Interpreter O2xInterpreter = {
