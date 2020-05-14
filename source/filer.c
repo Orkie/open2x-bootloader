@@ -3,6 +3,7 @@
 #include <fat.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <ctype.h>
 #include "bootloader.h"
 
 #define MAX_ON_SCREEN 9
@@ -147,23 +148,106 @@ static int selected = 0;
 #define INTERPRETERS_MAX 130
 static Interpreter* interpreters[INTERPRETERS_MAX];
 
+static void loadInterpretersIni() {
+  FILE* fp = fopen("sd:/interpreters.ini", "r");
+  if(fp == NULL || ferror(fp)) {
+    uart_printf("No interpreters file on SD\n");
+    return;
+  }
+
+  char* line = NULL;
+  size_t len = 0;
+  ssize_t read = 0;
+
+  int linesRead = 0;
+  int currentInterpreter = 2;
+  
+  while((read = __getline(&line, &len, fp)) != -1 && linesRead++ < (INTERPRETERS_MAX-2)) {
+    Interpreter* newInterp = malloc(sizeof(Interpreter));
+    if(newInterp == NULL) {
+      uart_printf("Can't allocate space for interpreter\n");
+      free(line);
+      return;
+    }
+    ExternalInterpreter* newExtInterp = malloc(sizeof(ExternalInterpreter));
+    if(newExtInterp == NULL) {
+      uart_printf("Can't allocate space for interpreter\n");
+      free(newInterp);
+      free(line);
+      return;
+    }
+
+    char* equals = strchr(line, '=');
+    if(equals == NULL) {
+      uart_printf("Line does not contain equals sign: %s\n", line);
+      free(newInterp);
+      free(newExtInterp);
+      free(line);
+      return;
+    }
+    int extensionLength = (int) (equals - line);
+
+    char* extension = malloc(extensionLength+1);
+    if(extension == NULL) {
+      uart_printf("Couldn't allocate space for ext\n");
+      free(newInterp);
+      free(newExtInterp);
+      free(line);
+      return;
+    }
+
+    strncpy(extension, line, extensionLength);
+    extension[extensionLength] = '\0';
+    
+    newInterp->extension = extension;
+    newInterp->isInternal = false;
+    newInterp->def.external = newExtInterp;
+
+    newExtInterp->pathOfInterpreter = malloc(strlen(equals+1)+1);
+    if(newExtInterp->pathOfInterpreter == NULL) {
+      uart_printf("Couldn't allocate space for ext\n");
+      free(newInterp);
+      free(newExtInterp);
+      free(line);
+      free(extension);
+      return;
+    }
+    strcpy(newExtInterp->pathOfInterpreter, equals+1);
+    char* newline = strrchr(newExtInterp->pathOfInterpreter, '\n');
+    if(newline != NULL) {
+      *newline = '\0';
+    }
+    
+    interpreters[currentInterpreter++] = newInterp;
+    free(line);
+  }
+
+  for(int i = INTERPRETERS_MAX ; i-- ;) {
+    if(interpreters[i] != NULL) {
+      uart_printf("Interpreter for %s loaded\n", interpreters[i]->extension);
+    }
+  }
+
+  fclose(fp);
+}
+
 static int init(char* error) {
   if(!fatInitDefault()) {
     strcpy(error, "No SD card detected.");
     return 1;
-  }   
+  }
 
   currentPath = newLink("sd:", true, NULL);
   updateCurrentDirectoryListing();
 
   selected = startRenderingFrom = 0;
 
-  // TODO load interpreter list from SD and merge into builtin list
   for(int i = INTERPRETERS_MAX ; i-- ; ) {
     interpreters[i] = NULL;
   }
   interpreters[0] = &O2xInterpreter;
   interpreters[1] = &KernelInterpreter;
+  loadInterpretersIni();
   
   return 0;
 }
@@ -263,11 +347,17 @@ static void selectFile() {
     selected = startRenderingFrom = 0;
     triggerRender();
   } else {
-    
-    char* selectedFileExtension = strrchr(selectedFile->name, '.')+1;
+    char* selectedFileExtension = strrchr(selectedFile->name, '.');
     if(selectedFileExtension == NULL) {
       showError("File has no extension");
       return;
+    }
+    selectedFileExtension++;
+
+    char* currentChar = selectedFileExtension;
+    while(*currentChar != '\0') {
+      *currentChar = tolower(*currentChar);
+      currentChar++;
     }
 
     Interpreter* interpreter = NULL;
@@ -285,10 +375,12 @@ static void selectFile() {
     
     append(currentPath, newLink(selectedFile->name, true, NULL));
 
+    char* path = pathFromList(currentPath, false);
     if(interpreter->isInternal) {
-      interpreter->def.internal->launch(pathFromList(currentPath, false));
+      interpreter->def.internal->launch(path, NULL);
     } else {
-      // TODO
+      O2xInterpreter.def.internal->launch(interpreter->def.external->pathOfInterpreter,
+					  path);
     }
     
     // failed

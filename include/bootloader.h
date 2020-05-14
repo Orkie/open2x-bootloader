@@ -40,7 +40,7 @@ typedef struct {
 #define BLACK 0x0000
 
 typedef struct {
-  int (*launch)(char* path);
+  int (*launch)(char* path, char* arg);
 } InternalInterpreter;
 
 typedef struct {

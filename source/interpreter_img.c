@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include "bootloader.h"
 
-static int launch(char* path) {
+static int launch(char* path, char* arg) {
   FILE* fp = fopen(path, "rb");
   if(fp == NULL) {
     showError("Could not open file");

@@ -21,7 +21,13 @@ typedef struct {
   uint8_t numberOfSections;
 } O2xHeader;
 
-static int launch(char* path) {
+static int launch(char* path, char* arg) {
+  if(arg != NULL) {
+    uart_printf("Launching %s with arg %s\n", path, arg);
+  } else {
+    uart_printf("Launching %s\n", path);
+  }
+  
   FILE* fp = fopen(path, "rb");
   if(fp == NULL) {
     showError("Could not open file");
@@ -42,19 +48,33 @@ static int launch(char* path) {
   }
 
   uint32_t* paramAddr = (uint32_t*) header.paramAddr;
+  int pathLen = strlen(path);
+  int requiredSpace = sizeof(uint32_t) +
+    sizeof(uint32_t) * (arg == NULL ? 1 : 2) +
+    sizeof(uint32_t) + // argv termination
+    pathLen + 1 +
+    (arg == NULL ? 0 : strlen(arg)+1);
+  
   if(header.paramLength == sizeof(int)) {
      uart_printf("Passing 0 parameters", (paramAddr+1));
     *paramAddr = 0;    
-  } else if(header.paramLength > (sizeof(uint32_t)*3)) {
+  } else if(header.paramLength >= requiredSpace) {
     uart_printf("Setting argv[0] at 0x%x\n", (paramAddr+1));
-    *paramAddr = 1;
+    *paramAddr = arg == NULL ? 1 : 2;
     paramAddr++;
-    *paramAddr = (uint32_t) paramAddr+(sizeof(uint32_t)*2);
+    *paramAddr = (uint32_t) paramAddr+(sizeof(uint32_t)*(arg == NULL ? 2 : 3));
     paramAddr++;
+    if(arg != NULL) {
+      *paramAddr = (uint32_t) paramAddr+(sizeof(uint32_t)*2) + pathLen + 1;
+      paramAddr++;
+    }
     *paramAddr = (uint32_t) NULL;
     paramAddr++;
 
-    strncpy((char*)paramAddr, path, header.paramLength-(sizeof(uint32_t)*3));
+    strcpy((char*)paramAddr, path);
+    if(arg != NULL) {
+      strcpy(((char*)paramAddr)+pathLen+1, arg);
+    }
   } else {
     uart_printf("Not setting parameters\n");
   }
