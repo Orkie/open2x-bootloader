@@ -305,8 +305,27 @@ static void handleInput(uint32_t buttonStates, uint32_t buttonPresses) {
   if(buttonPresses & B) {
     selectFile();
   }
-  
-  // TODO - left/right should move a page at a time, keep selected the same relative to the page
+
+  if(buttonPresses & LEFT) {
+    if(selected < MAX_ON_SCREEN) {
+      selected = 0;
+    } else {
+      selected -= MAX_ON_SCREEN;
+      startRenderingFrom = (startRenderingFrom - MAX_ON_SCREEN) < 0 ? 0 : startRenderingFrom - MAX_ON_SCREEN;
+    }
+    triggerRender();
+  }
+
+  if(buttonPresses & RIGHT) {
+    if((selected + MAX_ON_SCREEN) >= currentDirectoryLength) {
+      selected = currentDirectoryLength-1;
+      startRenderingFrom = (selected - MAX_ON_SCREEN) < 0 ? 0 : (selected - MAX_ON_SCREEN + 1);
+    } else {
+      selected += MAX_ON_SCREEN;
+      startRenderingFrom += MAX_ON_SCREEN;
+    }
+    triggerRender();
+  }
   
   if(buttonPresses & X && currentPath->next == NULL) {
     transitionView(&MainMenu);

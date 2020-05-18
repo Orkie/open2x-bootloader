@@ -3,13 +3,12 @@
 +------+
 
 Move text address down slightly to allow running of GPH u-boot
-Load interpreters from SD
-Write uboot kernel interpreter
 Display icons on filer
-Filter page navigation
+Filer page navigation (i.e. left/right for skip page)
 Debounce button presses - and allow repeat
 Settings for autoboot linux from nand, autoboot autoboot.o2x from SD, display icons
 Sort out error message
 Display UI controls somewhere
 
+Get isF200 working in Orcus, and also beef up SD driver
 - fix crt0 run bootloader code to use nand interrupt flag which is more reliable, see orcus for C equivalent
