@@ -4,8 +4,7 @@
 
 Move text address down slightly to allow running of GPH u-boot
 Display icons on filer
-Filer page navigation (i.e. left/right for skip page)
-Debounce button presses - and allow repeat
+Allow button repeat
 Settings for autoboot linux from nand, autoboot autoboot.o2x from SD, display icons
 Sort out error message
 Display UI controls somewhere

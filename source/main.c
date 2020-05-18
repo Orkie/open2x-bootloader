@@ -60,6 +60,16 @@ int main() {
   uint32_t previousButtonState = 0;
   while(1) {
     uint32_t currentButtonState = btnState();
+    uint32_t nextButtonState;
+    while(1) {
+      usleep(5000);
+      nextButtonState = btnState();
+      if(nextButtonState == currentButtonState) {
+	break;
+      }
+      currentButtonState = nextButtonState;
+    }
+    
     if(currentView != NULL) {
       currentView->handleInput(currentButtonState, currentButtonState&(~previousButtonState));
     }
