@@ -8,6 +8,10 @@ Allow button repeat
 Settings for autoboot linux from nand, autoboot autoboot.o2x from SD, display icons
 Sort out error message
 Display UI controls somewhere
+Able to write new uboot image to kernel area of NAND
 
 Get isF200 working in Orcus, and also beef up SD driver
 - fix crt0 run bootloader code to use nand interrupt flag which is more reliable, see orcus for C equivalent
+
+Kermit transfer http://www.columbia.edu/kermit/ek.html
+
