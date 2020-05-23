@@ -112,7 +112,7 @@ DEPENDS	:=	$(OFILES:.o=.d)
 # main targets
 #---------------------------------------------------------------------------------
 $(OUTPUT).bin   :       $(OFILES)
-	$(OBJCOPY) -O binary bootstrap.o bootstrap.bin
+	$(OBJCOPY) --pad-to 0x200 --gap-fill 0x00 -O binary bootstrap.o bootstrap.bin
 
 -include $(DEPENDS)
 

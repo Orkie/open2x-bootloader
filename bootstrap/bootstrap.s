@@ -78,7 +78,7 @@ nand_read:
 
 	// read one block
 	ldr		r1, =NFCMD
-	ldr		r0, =0x0
+	ldr		r0, =0x1
 	strb		r0, [r1]
 
 	// write address out one byte at a time
