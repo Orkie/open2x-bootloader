@@ -7,7 +7,7 @@
     .section	".crt0","ax"
 	.code 32
 	.align
-	.global _start, _undefined_instruction, _software_interrupt, _prefetch_abort, _data_abort, _not_used, _irq, _fiq
+	.global _start, _not_used
 
         .set  Mode_USR, 0x10
         .set  Mode_FIQ, 0x11
@@ -43,25 +43,6 @@ not_used:
 	
 @---------------------------------------------------------------------------------
 _start2:
-@---------------------------------------------------------------------------------
-	ldr		R0,=__stack_base
-	ldr             R1,=__int_stack_size
-	
-	msr		CPSR_c, #Mode_FIQ|I_Bit|F_Bit
-	mov		sp, R0
-	sub		R0, R0, R1
-
-	msr		CPSR_c, #Mode_IRQ|I_Bit|F_Bit
-	mov		sp, R0
-	sub		R0, R0, R1
-
-	msr		CPSR_c, #Mode_SVC|I_Bit|F_Bit
-	mov		sp, R0
-
-@---------------------------------------------------------------------------------
-@ Jump to user code
-@---------------------------------------------------------------------------------
-_call_main:
 @---------------------------------------------------------------------------------
 	bl 		disable_caches_mmu
 	b		run_bootloader
@@ -115,10 +96,8 @@ nand_read:
 nand_read_wait:
 	ldr		r1, =MEMNANDCTRLW
         ldrh		r0, [r1]
-	tst		r0, #0x8000
+	tst		r0, #0x80
 	beq		nand_read_wait
-	ldr		r0, =#0x8080
-	strh		r0, [r1]
 
 	ldr		r1, =NFDATA
 	sub		r5, r4, #BLOCK_SIZE

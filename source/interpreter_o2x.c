@@ -80,6 +80,7 @@ static int launch(char* path, char* arg) {
   }
 
   O2xSection sectionHeader;
+  uint32_t jumpTo = 0x0;
   for(int i  = 0 ; i < header.numberOfSections ; i++) {
     if(fread(&sectionHeader, sizeof(O2xSection), 1, fp) != 1) {
       showError("Could not read from file");
@@ -101,6 +102,7 @@ static int launch(char* path, char* arg) {
     // first section is special, it is the entry point for the 920t, we need to copy its vector table into place
     if(i == 0) {
       uart_printf("Copying vector table for section 0\n");
+      jumpTo = sectionHeader.loadAddress;
       usleep(20000);
       uint32_t* copyTo = (uint32_t*) 0x0;
       while(*dest != 0xDEADBEEF) {
@@ -111,8 +113,9 @@ static int launch(char* path, char* arg) {
     }
   }
   fclose(fp);
-  
-  JMP(0x0);
+
+  uart_printf("Jumping to 0x%x\n", jumpTo);
+  JMP(jumpTo);
   return 1;// we should never reach here
 }
 
