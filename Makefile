@@ -28,12 +28,14 @@ ARCH	:=
 CFLAGS	:=	-g -Wall -O2 -mtune=arm9tdmi \
 		-fomit-frame-pointer \
 		-ffast-math \
+		-fPIC \
 		$(ARCH)
+ASFLAGS :=      -fPIC
 
 CFLAGS	+=	$(INCLUDE)
 
 AFLAGS	:=	$(ARCH)
-LDFLAGS	=	$(ARCH) -Wl,-Map,$(notdir $@).map -Xlinker --section-start=.text=0x3D00000 -Xlinker --defsym=__start_of_heap=0x100000 -Xlinker --defsym=__end_of_heap=0x3D00000
+LDFLAGS	=	$(ARCH) -Wl,-Map,$(notdir $@).map -Xlinker --section-start=.crt0=0x3D00000 -Xlinker --defsym=__start_of_heap=0x100000 -Xlinker --defsym=__end_of_heap=0x3D00000
 
 #---------------------------------------------------------------------------------
 # path to tools - this can be deleted if you set the path in windows
@@ -111,6 +113,9 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
+$(OUTPUT).bin   :       $(OUTPUT).elf
+	$(OBJCOPY) -O binary $< $@
+
 $(OUTPUT).elf	:	$(OFILES)
 
 #---------------------------------------------------------------------------------

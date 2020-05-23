@@ -2,7 +2,6 @@
 | TODO |
 +------+
 
-Move text address down slightly to allow running of GPH u-boot
 Display icons on filer
 Allow button repeat
 Settings for autoboot linux from nand, autoboot autoboot.o2x from SD, display icons
