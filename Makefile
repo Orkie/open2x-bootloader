@@ -19,6 +19,7 @@ TARGET		:=	$(shell basename $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	source data
 INCLUDES	:=	include
+BOOTSTRAP       :=      bootstrap
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -102,7 +103,8 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) *.elf
+	@make -C $(BOOTSTRAP) clean
+	@rm -fr $(BUILD) *.elf *.bin *.img
 
 
 #---------------------------------------------------------------------------------
@@ -113,6 +115,12 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
+gp2xboot.img    :       $(OUTPUT).bin bootstrap.bin
+	cat $(CURDIR)/../$(BOOTSTRAP)/build/bootstrap.bin $(OUTPUT).bin > ../$@
+
+bootstrap.bin:
+		make -C $(CURDIR)/../$(BOOTSTRAP)
+
 $(OUTPUT).bin   :       $(OUTPUT).elf
 	$(OBJCOPY) -O binary $< $@
 

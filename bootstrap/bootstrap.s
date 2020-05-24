@@ -60,9 +60,9 @@ run_bootloader:
 	#define MEMNANDTIMEW    0xC0003A3C
 
 	// load parameters
-	#define LOAD_ADDRESS	0x03E00000
-	#define LOAD_LENGTH	0x00080000
 	#define BLOCK_SIZE	512
+	#define LOAD_ADDRESS	(0x03D00000-BLOCK_SIZE)
+	#define LOAD_LENGTH	0x00080000
 	
 	// set NAND timing
 	ldr		r1, =MEMNANDTIMEW
@@ -78,7 +78,7 @@ nand_read:
 
 	// read one block
 	ldr		r1, =NFCMD
-	ldr		r0, =0x1
+	ldr		r0, =0x0
 	strb		r0, [r1]
 
 	// write address out one byte at a time
@@ -109,11 +109,13 @@ nand_copy_data:
 	bne		nand_copy_data
 
 	sub		r4, r4, #BLOCK_SIZE
-	cmp		r3, #0
+	cmp		r3, #BLOCK_SIZE // don't copy first block
 	bne		nand_read
 
+	b launch_bootloader
+	
 	// now copy all bytes up to 0xdeadbeef to 0x0 in order to replace the vector table
-	ldr		r1, =LOAD_ADDRESS
+	ldr		r1, =(LOAD_ADDRESS+BLOCK_SIZE)
 	ldr		r2, =0x0
 	ldr		r3, =0xdeadbeef
 copy_next_byte:
@@ -127,7 +129,7 @@ copy_next_byte:
 	
 launch_bootloader:	
 	// we are done, jump to bootloader
-	ldr		lr, =LOAD_ADDRESS
+	ldr		lr, =(LOAD_ADDRESS+BLOCK_SIZE)
 	mov		pc, lr
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0151c/I66051.html	
