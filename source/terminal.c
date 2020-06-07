@@ -12,6 +12,7 @@ int bufferCount = 0;
 void doHelp();
 void doLs();
 void doMd();
+void doMw();
 
 static bool startsWith(char* a, char* prefix) {
   return strncmp(prefix, a, strlen(prefix)) == 0;
@@ -35,6 +36,8 @@ static void terminalHandleCr() {
     doLs();
   } else if(startsWith(inputBuffer, "md")) {
     doMd();
+  } else if(startsWith(inputBuffer, "mw")) {
+    doMw();
   } else {
     printf("Unknown command\n");
   }
@@ -103,4 +106,31 @@ void doMd() {
   } else {
     printf("Invalid width\n");
   }
+}
+
+void doMw() {
+  char* space1 = strchr(inputBuffer, ' ');
+  if(space1 == NULL) {
+    printf("Invalid invocation of mw\n");
+    return;
+  }
+  unsigned int address = strtoul(space1, NULL, 0);  
+
+  char* space2 = strchr(space1+1, ' ');
+  if(space2 == NULL) {
+    printf("Invalid invocation of mw\n");
+    return;
+  }
+  unsigned int value = strtoul(space2, NULL, 0);    
+  
+  if(startsWith(inputBuffer, "mwb")) {
+    *((uint8_t*) address) = (uint8_t) value;
+  } else if(startsWith(inputBuffer, "mwh")) {
+    *((uint16_t*) address) = (uint16_t) value;
+  } else if(startsWith(inputBuffer, "mww")) {
+    *((uint32_t*) address) = (uint32_t) value;
+  } else {
+    printf("Invalid width\n");
+  }
+  
 }
