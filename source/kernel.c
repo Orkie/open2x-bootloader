@@ -39,7 +39,7 @@ int launchKernel(void* image) {
 
   int result = prepareImage(image, &entry);
   if(!result) {
-    uart_printf("Executing kernel at 0x%x\n", entry);
+    uartPrintf("Executing kernel at 0x%x\n", entry);
     
     asm volatile("ldr r0, =0x0");
     asm volatile("ldr r1, =395");
@@ -52,7 +52,7 @@ int launchKernel(void* image) {
 void* loadKernelFromNand() {
   void* dest = malloc(KERNEL_REGION_BYTES);
   nandRead(0x80000, KERNEL_REGION_BYTES>>9, dest);
-  uart_printf("Loaded data from NAND at 0x%x\n", dest);
+  uartPrintf("Loaded data from NAND at 0x%x\n", dest);
   return dest;
 }
 
@@ -69,35 +69,35 @@ int prepareImage(void* img, uint32_t* entry) {
   void* startOfData = (void*) (header+1);
 
   if(B2L(header->ih_magic) != UBOOT_MAGIC_NUMBER) {
-    uart_printf("Not a valid u-boot image\n");
+    uartPrintf("Not a valid u-boot image\n");
     return 1;
   }
 
   if(header->ih_arch != 2) {
-    uart_printf("Not an ARM image\n");
+    uartPrintf("Not an ARM image\n");
     return 2;
   }
 
-  uart_printf("Image name is '%.32s'\n", header->ih_name);
-  uart_printf("  Length: 0x%x\n", B2L(header->ih_size)); 
-  uart_printf("  Load address: 0x%x\n", B2L(header->ih_load));
-  uart_printf("  Entry point: 0x%x\n", B2L(header->ih_ep));
+  uartPrintf("Image name is '%.32s'\n", header->ih_name);
+  uartPrintf("  Length: 0x%x\n", B2L(header->ih_size)); 
+  uartPrintf("  Load address: 0x%x\n", B2L(header->ih_load));
+  uartPrintf("  Entry point: 0x%x\n", B2L(header->ih_ep));
    *entry = B2L(header->ih_ep);
 
   if(header->ih_comp == 0) {
-    uart_printf("Not compressed\n");
+    uartPrintf("Not compressed\n");
     memcpy((void*)B2L(header->ih_load), startOfData, B2L(header->ih_size));
   } else if(header->ih_comp == 1) {
-    uart_printf("GZip compressed\n");
+    uartPrintf("GZip compressed\n");
 
     if(gunzip((uint8_t*) startOfData, B2L(header->ih_size), (void*)B2L(header->ih_load))) {
-      uart_printf("Could not gunzip\n");
+      uartPrintf("Could not gunzip\n");
       return 4;
     }
     
-    uart_printf("Successfully unzipped\n");
+    uartPrintf("Successfully unzipped\n");
   } else {
-    uart_printf("Unsupported compression type\n");
+    uartPrintf("Unsupported compression type\n");
     return 3;
   }
 
@@ -109,7 +109,7 @@ int gunzip(uint8_t* data, unsigned int length, void* dest) {
   uint8_t flg = data[3];
 
   if(data[0] != 0x1f || data[1] != 0x8b) {
-    uart_printf("Invalid gzip data\n");
+    uartPrintf("Invalid gzip data\n");
     return 1;
   }
 
@@ -138,7 +138,7 @@ int gunzip(uint8_t* data, unsigned int length, void* dest) {
   zs.zalloc = Z_NULL;
   zs.zfree = Z_NULL;
   if((r = inflateInit2(&zs, -Z_DEFAULT_WINDOW_BITS)) != Z_OK) {
-    uart_printf("Could not init inflate: %d\n", r);
+    uartPrintf("Could not init inflate: %d\n", r);
     return 1;
   }
 
@@ -149,7 +149,7 @@ int gunzip(uint8_t* data, unsigned int length, void* dest) {
 
   r = inflate(&zs, Z_FINISH);
   if(r != Z_OK && r != Z_STREAM_END) {
-    uart_printf("Inflate failed: %d\n", r);
+    uartPrintf("Inflate failed: %d\n", r);
     return 1;
   }
 

@@ -132,7 +132,7 @@ static FileList* updateCurrentDirectoryListing() {
     }
     closedir(dp);
   } else {
-    uart_printf("Couldn't open the directory\n");
+    uartPrintf("Couldn't open the directory\n");
     // TODO - report this error back to the user
   }
   
@@ -151,84 +151,111 @@ static Interpreter* interpreters[INTERPRETERS_MAX];
 static void loadInterpretersIni() {
   FILE* fp = fopen("sd:/interpreters.ini", "r");
   if(fp == NULL || ferror(fp)) {
-    uart_printf("No interpreters file on SD\n");
+    uartPrintf("No interpreters file on SD\n");
     return;
   }
 
-  char* line = NULL;
-  size_t len = 0;
-  ssize_t read = 0;
+  char line[1024];
 
   int linesRead = 0;
   int currentInterpreter = 2;
+
+  uartPrintf("1\n");
+
+  while(fgets(line, 1024, fp) != NULL && (linesRead++ < (INTERPRETERS_MAX-2))) {
+    uartPrintf("This is a line: %s\n", line);
+  }
+  fclose(fp);
+  return;
   
-  while((read = __getline(&line, &len, fp)) != -1 && linesRead++ < (INTERPRETERS_MAX-2)) {
+  while(fgets(line, 1024, fp) != NULL && linesRead++ < (INTERPRETERS_MAX-2)) {
+    uartPrintf("read line '%s'\n");
+  uartPrintf("2\n");
+
     Interpreter* newInterp = malloc(sizeof(Interpreter));
     if(newInterp == NULL) {
-      uart_printf("Can't allocate space for interpreter\n");
-      free(line);
+      uartPrintf("Can't allocate space for interpreter\n");
       return;
     }
+      uartPrintf("3\n");
+
     ExternalInterpreter* newExtInterp = malloc(sizeof(ExternalInterpreter));
     if(newExtInterp == NULL) {
-      uart_printf("Can't allocate space for interpreter\n");
+      uartPrintf("Can't allocate space for interpreter\n");
       free(newInterp);
-      free(line);
       return;
     }
 
+      uartPrintf("4\n");
+
     char* equals = strchr(line, '=');
     if(equals == NULL) {
-      uart_printf("Line does not contain equals sign: %s\n", line);
+      uartPrintf("Line does not contain equals sign: %s\n", line);
       free(newInterp);
       free(newExtInterp);
-      free(line);
       return;
     }
     int extensionLength = (int) (equals - line);
 
+      uartPrintf("5\n");
+
     char* extension = malloc(extensionLength+1);
     if(extension == NULL) {
-      uart_printf("Couldn't allocate space for ext\n");
+      uartPrintf("Couldn't allocate space for ext\n");
       free(newInterp);
       free(newExtInterp);
-      free(line);
       return;
     }
 
-    strncpy(extension, line, extensionLength);
+      uartPrintf("6\n");
+
+
+    strncpy(extension, line, extensionLength+1);
     extension[extensionLength] = '\0';
     
     newInterp->extension = extension;
     newInterp->isInternal = false;
     newInterp->def.external = newExtInterp;
 
+      uartPrintf("7\n");
+
     newExtInterp->pathOfInterpreter = malloc(strlen(equals+1)+1);
     if(newExtInterp->pathOfInterpreter == NULL) {
-      uart_printf("Couldn't allocate space for ext\n");
+      uartPrintf("Couldn't allocate space for ext\n");
       free(newInterp);
       free(newExtInterp);
-      free(line);
       free(extension);
       return;
     }
+      uartPrintf("8\n");
+
     strcpy(newExtInterp->pathOfInterpreter, equals+1);
     char* newline = strrchr(newExtInterp->pathOfInterpreter, '\n');
     if(newline != NULL) {
       *newline = '\0';
     }
+      uartPrintf("9\n");
+
     
     interpreters[currentInterpreter++] = newInterp;
-    free(line);
+
+
+      uartPrintf("10\n");
+
   }
+    uartPrintf("11\n");
 
   for(int i = INTERPRETERS_MAX ; i-- ;) {
     if(interpreters[i] != NULL) {
-      uart_printf("Interpreter for %s loaded\n", interpreters[i]->extension);
+      uartPrintf("Interpreter for %s loaded\n", interpreters[i]->extension);
     }
   }
+    uartPrintf("12\n");
+
 
   fclose(fp);
+    uartPrintf("13\n");
+
 }
 
 static int init(char* error) {
@@ -243,17 +270,22 @@ static int init(char* error) {
   selected = startRenderingFrom = 0;
 
   for(int i = INTERPRETERS_MAX ; i-- ; ) {
+    if(interpreters[i] != NULL) {
+      free(interpreters[i]); // TODO - free this fully
+    }
     interpreters[i] = NULL;
   }
   interpreters[0] = &O2xInterpreter;
   interpreters[1] = &KernelInterpreter;
-  loadInterpretersIni();
+  //  loadInterpretersIni();
   
   return 0;
 }
 
 static void deinit() {
   freeList(currentPath);
+  freeList(currentDirectoryListing);
+  currentDirectoryListing = NULL;
 }
 
 static void render(uint16_t* fb) {

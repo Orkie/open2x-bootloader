@@ -2,15 +2,37 @@
 | TODO |
 +------+
 
+Can crt0 reload the bootloader correctly when an o2x terminates?
 Display icons on filer
 Allow button repeat
+Sort files in directory - by type (dir, file) and name
 Settings for autoboot linux from nand, autoboot autoboot.o2x from SD, display icons
 Sort out error message
 Display UI controls somewhere
-Able to write new uboot image to kernel area of NAND
+Able to write new uboot image to kernel area of NAND - should perform same checks as when booting to verify the image at least looks reasonable
 
-Get isF200 working in Orcus, and also beef up SD driver
+Get isF200 working in Orcus, and also beef up SD driver - SD 1.x untested, have ordered an old 32M card off ebay
 - fix crt0 run bootloader code to use nand interrupt flag which is more reliable, see orcus for C equivalent
 
 Kermit transfer http://www.columbia.edu/kermit/ek.html
 
+Investigate memory leak in filer
+
+
+Patch out nand load code from uboot to make loadable uboot binaries
+
+      b0:       e51f1040        ldr     r1, [pc, #-64]  ; 0x78
+      b4:       e2000000        and     r0, r0, #0
+      b8:       e2800c07        add     r0, r0, #1792   ; 0x700
+      bc:       e28000f0        add     r0, r0, #240    ; 0xf0
+      c0:       e280000f        add     r0, r0, #15
+....
+     16c:       e3580c02        cmp     r8, #512        ; 0x200
+     170:       1afffff8        bne     0x158
+     174:       e2866c02        add     r6, r6, #512    ; 0x200
+     178:       e1560009        cmp     r6, r9
+     17c:       daffffd9        ble     0xe8
+     180:       e51ff004        ldr     pc, [pc, #-4]   ; 0x184
+
+Can we replace b0 to 17c with nops?
+nop is 0xe1a00000 (00 00 a0 e1 in hex)

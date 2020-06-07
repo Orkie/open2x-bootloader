@@ -23,9 +23,9 @@ typedef struct {
 
 static int launch(char* path, char* arg) {
   if(arg != NULL) {
-    uart_printf("Launching %s with arg %s\n", path, arg);
+    uartPrintf("Launching %s with arg %s\n", path, arg);
   } else {
-    uart_printf("Launching %s\n", path);
+    uartPrintf("Launching %s\n", path);
   }
   
   FILE* fp = fopen(path, "rb");
@@ -56,10 +56,10 @@ static int launch(char* path, char* arg) {
     (arg == NULL ? 0 : strlen(arg)+1);
   
   if(header.paramLength == sizeof(int)) {
-     uart_printf("Passing 0 parameters", (paramAddr+1));
+     uartPrintf("Passing 0 parameters", (paramAddr+1));
     *paramAddr = 0;    
   } else if(header.paramLength >= requiredSpace) {
-    uart_printf("Setting argv[0] at 0x%x\n", (paramAddr+1));
+    uartPrintf("Setting argv[0] at 0x%x\n", (paramAddr+1));
     *paramAddr = arg == NULL ? 1 : 2;
     paramAddr++;
     *paramAddr = (uint32_t) paramAddr+(sizeof(uint32_t)*(arg == NULL ? 2 : 3));
@@ -76,7 +76,7 @@ static int launch(char* path, char* arg) {
       strcpy(((char*)paramAddr)+pathLen+1, arg);
     }
   } else {
-    uart_printf("Not setting parameters\n");
+    uartPrintf("Not setting parameters\n");
   }
 
   O2xSection sectionHeader;
@@ -88,7 +88,7 @@ static int launch(char* path, char* arg) {
       return 5;
     }
 
-    uart_printf("Loading section %d at address 0x%x, %d bytes\n", i, sectionHeader.loadAddress, sectionHeader.length);
+    uartPrintf("Loading section %d at address 0x%x, %d bytes\n", i, sectionHeader.loadAddress, sectionHeader.length);
 
     // TODO - we need to really check if we are going to overwrite ourselves here, and load to memory then run a small piece of PIC code which copies it to its final destination
 
@@ -101,7 +101,7 @@ static int launch(char* path, char* arg) {
 
     // first section is special, it is the entry point for the 920t, we need to copy its vector table into place
     if(i == 0) {
-      uart_printf("Copying vector table for section 0\n");
+      uartPrintf("Copying vector table for section 0\n");
       jumpTo = sectionHeader.loadAddress;
       usleep(20000);
       uint32_t* copyTo = (uint32_t*) 0x0;
@@ -114,7 +114,7 @@ static int launch(char* path, char* arg) {
   }
   fclose(fp);
 
-  uart_printf("Jumping to 0x%x\n", jumpTo);
+  uartPrintf("Jumping to 0x%x\n", jumpTo);
   JMP(jumpTo);
   return 1;// we should never reach here
 }
