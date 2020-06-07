@@ -30,13 +30,15 @@ void loadSettings() {
 
 int main() {
   gp2xInit();
-  uartPrintf("\n\n**********************************\nOpen2x Bootloader %s\n**********************************\n", VERSION);
-  uartPrintf("Auto load kernel: %s\n", autoloadKernel ? "on" : "off");
-  uartPrintf("**********************************\n");
+  setbuf(stdout, NULL);
+  
+  printf("\n\n**********************************\nOpen2x Bootloader %s\n**********************************\n", VERSION);
+  printf("Auto load kernel: %s\n", autoloadKernel ? "on" : "off");
+  printf("**********************************\n");
 
   if(autoloadKernel && !(btnState()&START)) {
     launchKernelFromNand();
-    uartPrintf("Failed to load kernel from NAND!\n");
+    printf("Failed to load kernel from NAND!\n");
     // TODO - if we reach this point, loading kernel has failed and we should show something on the screen
   }
   
@@ -58,7 +60,17 @@ int main() {
   uint16_t* currentFb = fb0;
   uint16_t* nextFb = fb1;
   uint32_t previousButtonState = 0;
+  
+  uartSetEcho(true);
+  terminalNewline();
+  int gotChar = EOF;
+
   while(1) {
+
+    while((gotChar = uartGetc(false)) != EOF) {
+      terminalHandleChar(gotChar);
+    }
+    
     uint32_t currentButtonState = btnState();
     uint32_t nextButtonState;
     while(1) {

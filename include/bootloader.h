@@ -68,4 +68,7 @@ extern Interpreter KernelInterpreter;
             "r" (addr) \
            );
 
+extern void terminalHandleChar(int c);
+extern void terminalNewline();
+
 #endif
