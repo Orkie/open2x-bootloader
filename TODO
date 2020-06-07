@@ -16,8 +16,6 @@ Get isF200 working in Orcus, and also beef up SD driver - SD 1.x untested, have 
 
 Kermit transfer http://www.columbia.edu/kermit/ek.html
 
-Investigate memory leak in filer
-
 
 Patch out nand load code from uboot to make loadable uboot binaries
 

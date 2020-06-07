@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <dirent.h>
@@ -10,6 +11,7 @@ int bufferCount = 0;
 
 void doHelp();
 void doLs();
+void doMd();
 
 static bool startsWith(char* a, char* prefix) {
   return strncmp(prefix, a, strlen(prefix)) == 0;
@@ -31,6 +33,8 @@ static void terminalHandleCr() {
     doHelp();
   } else if(startsWith(inputBuffer, "ls")) {
     doLs();
+  } else if(startsWith(inputBuffer, "md")) {
+    doMd();
   } else {
     printf("Unknown command\n");
   }
@@ -40,6 +44,8 @@ static void terminalHandleCr() {
 void terminalHandleChar(int c) {
   if(c == '\n' || c == '\r') {
     terminalHandleCr();
+  } else if(c == 8 && bufferCount != 0) {
+    inputBuffer[bufferCount--] = '\0';
   } else {
     if(bufferCount < BUF_SIZE) {
       inputBuffer[bufferCount++] = (char) c;
@@ -77,5 +83,24 @@ void doLs() {
       printf("%s\n", dir->d_name);
     }
     closedir(d);
+  }
+}
+
+void doMd() {
+  char* space = strchr(inputBuffer, ' ');
+  if(space == NULL) {
+    printf("Invalid invocation of md\n");
+    return;
+  }
+  unsigned int address = strtoul(space, NULL, 0);  
+  
+  if(startsWith(inputBuffer, "mdb")) {
+    printf("0x%x: 0x%x\n", address, *((uint8_t*) address));
+  } else if(startsWith(inputBuffer, "mdh")) {
+    printf("0x%x: 0x%x\n", address, *((uint16_t*) address));
+  } else if(startsWith(inputBuffer, "mdw")) {
+    printf("0x%x: 0x%lx\n", address, *((uint32_t*) address));
+  } else {
+    printf("Invalid width\n");
   }
 }
