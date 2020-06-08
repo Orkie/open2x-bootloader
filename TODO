@@ -14,8 +14,7 @@ Able to write new uboot image to kernel area of NAND - should perform same check
 Get isF200 working in Orcus, and also beef up SD driver - SD 1.x untested, have ordered an old 32M card off ebay
 - fix crt0 run bootloader code to use nand interrupt flag which is more reliable, see orcus for C equivalent
 
-Kermit transfer http://www.columbia.edu/kermit/ek.html
-
+Implement command to run from command line
 
 Patch out nand load code from uboot to make loadable uboot binaries
 

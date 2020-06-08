@@ -4,15 +4,19 @@
 #include <stdbool.h>
 #include <dirent.h>
 #include <fat.h>
+#include <orcus.h>
 
 #define BUF_SIZE 512
 char inputBuffer[BUF_SIZE];
 int bufferCount = 0;
 
+extern int xmodemReceive(unsigned char *dest, int destsz);
+
 void doHelp();
 void doLs();
 void doMd();
 void doMw();
+void doXm();
 
 static bool startsWith(char* a, char* prefix) {
   return strncmp(prefix, a, strlen(prefix)) == 0;
@@ -38,6 +42,8 @@ static void terminalHandleCr() {
     doMd();
   } else if(startsWith(inputBuffer, "mw")) {
     doMw();
+  } else if(equals(inputBuffer, "xm")) {
+    doXm();
   } else {
     printf("Unknown command\n");
   }
@@ -61,7 +67,7 @@ void doHelp() {
   printf("run [path]             - Runs a file\n");
   printf("md[whb] [addr]         - Displays the value of a memory address as a 32, 16 or 8 bit value\n");
   printf("mw[whb] [addr] [value] - Writes a value to a memory address\n");
-  printf("kermit                 - Receives an runs an o2x via Kermit\n");
+  printf("xm                     - Receives an runs an o2x via xmodem\n");
   printf("help                   - Displays this message\n");
 }
 
@@ -132,5 +138,23 @@ void doMw() {
   } else {
     printf("Invalid width\n");
   }
+}
+
+#define XM_BUF_SIZE 0x400000 // 4M
+void doXm() {
+  unsigned char* buffer = (unsigned char*) malloc(XM_BUF_SIZE);
+  if(buffer == NULL) {
+    printf("Could not allocate buffer to receive file\n");
+  }
+  uartSetEcho(false);
+
+  printf("Waiting to receive file...\n");
+  xmodemReceive(buffer, XM_BUF_SIZE);
+  usleep(10000);
+  printf("\r\nTransfer complete!\n");
+
+  // TODO - refactor interpreter_o2x.c to allow running an in-memory binary, note that we only have 1M of space below the heap so may need to fiddle with that / make sure we don't have any sections in the heap area
   
+  uartSetEcho(true);
+  free(buffer);
 }
