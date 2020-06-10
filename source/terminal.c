@@ -83,8 +83,7 @@ void doLs() {
     printf("Invalid invocation of ls\n");
     return;
   }
-
-  fatUnmount("sd");
+  
   if(!fatInitDefault()) {
     printf("Couldn't open SD card\n");
   }
@@ -98,6 +97,8 @@ void doLs() {
     }
     closedir(d);
   }
+
+  fatUnmount("sd");
 }
 
 void doMd() {

@@ -152,7 +152,6 @@ static Interpreter* interpreters[INTERPRETERS_MAX];
 static void loadInterpretersIni() {
   FILE* fp = fopen("sd:/interpreters.ini", "r");
   if(fp == NULL || ferror(fp)) {
-    uartPrintf("No interpreters file on SD\n");
     return;
   }
 
@@ -253,7 +252,6 @@ void doRunFile(char* extension, char* path) {
 }
 
 static int init(char* error) {
-  fatUnmount("sd");
   if(!fatInitDefault()) {
     strcpy(error, "No SD card detected.");
     return 1;
