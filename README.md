@@ -1,14 +1,6 @@
-# orcus
-Low level library for GP2X
+# Open2x bootloader
+Alternative bootloader for GP2X. Requires orcus and devkitarm to compile.
 
-To launch an elf executable via JTAG...
+'make' will generate a gp2xboot.img file which can be flashed with the GPH u-boot.
 
-sudo openocd -f gp2x-openocd.cfg
-
-$DEVKITARM/bin/arm-none-eabi-gdb
-exec-file YOUR.elf
-target remote localhost:3333
-load
-cont
-
-After recompiling, just run ctrl+c to kill the process within gdb then 'load' and 'cont' again.
+The bootloader has a simple command line interface accessible via UART - type 'help' to see the list of commands

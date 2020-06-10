@@ -141,7 +141,7 @@ void doMw() {
   }
 }
 
-#define XM_BUF_SIZE 0x400000 // 4M
+#define XM_BUF_SIZE 0x100000 // 1M
 extern int launchO2xFile(FILE* fp, char* path, char* arg);
 void doXm() {
   unsigned char* buffer = (unsigned char*) malloc(XM_BUF_SIZE);
