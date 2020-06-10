@@ -6,6 +6,7 @@
 #include <fat.h>
 #include <orcus.h>
 #include <unistd.h>
+#include "bootloader.h"
 
 #define BUF_SIZE 512
 char inputBuffer[BUF_SIZE];
@@ -18,6 +19,7 @@ void doLs();
 void doMd();
 void doMw();
 void doXm();
+void doRun();
 
 static bool startsWith(char* a, char* prefix) {
   return strncmp(prefix, a, strlen(prefix)) == 0;
@@ -45,6 +47,8 @@ static void terminalHandleCr() {
     doMw();
   } else if(equals(inputBuffer, "xm")) {
     doXm();
+  } else if(startsWith(inputBuffer, "run")) {
+    doRun();
   } else {
     printf("Unknown command\n");
   }
@@ -171,4 +175,34 @@ void doXm() {
   
   uartSetEcho(true);
   free(buffer);
+}
+
+extern void doRunFile(char* extension, char* path);
+void doRun() {
+  char arg[BUF_SIZE];
+  int r = sscanf(inputBuffer, "run %s", arg);
+  if(r != 1) {
+    printf("Invalid invocation of run\n");
+    return;
+  }
+
+  char error[32];
+  if(Filer.init(error)) {
+    printf("Couldn't init\n");
+    return;
+  }
+
+  char* extension = strrchr(arg, '.');
+  if(extension == NULL) {
+    printf("Trying to run file without extension\n");
+    goto DONE;
+  }
+  extension++;
+
+  doRunFile(extension, arg);
+
+  printf("Couldn't run %s\n", arg);
+  
+ DONE:
+  Filer.deinit();
 }

@@ -224,7 +224,36 @@ static void loadInterpretersIni() {
   fclose(fp);
 }
 
+void doRunFile(char* extension, char* path) {
+  char* currentChar = extension;
+  while(*currentChar != '\0') {
+    *currentChar = tolower(*currentChar);
+    currentChar++;
+  }
+
+  Interpreter* interpreter = NULL;
+  for(int i = INTERPRETERS_MAX ; i-- ; ) { // done from the end so you can override the builtins
+    if(interpreters[i] != NULL && strcmp(extension, interpreters[i]->extension) == 0) {
+      interpreter = interpreters[i];
+      break;
+    }
+  }
+
+  if(interpreter == NULL) {
+    showError("No interpreter");
+    return;
+  }
+    
+  if(interpreter->isInternal) {
+    interpreter->def.internal->launch(path, NULL);
+  } else {
+    O2xInterpreter.def.internal->launch(interpreter->def.external->pathOfInterpreter,
+					path);
+  }
+}
+
 static int init(char* error) {
+  fatUnmount("sd");
   if(!fatInitDefault()) {
     strcpy(error, "No SD card detected.");
     return 1;
@@ -373,34 +402,10 @@ static void selectFile() {
     }
     selectedFileExtension++;
 
-    char* currentChar = selectedFileExtension;
-    while(*currentChar != '\0') {
-      *currentChar = tolower(*currentChar);
-      currentChar++;
-    }
-
-    Interpreter* interpreter = NULL;
-    for(int i = INTERPRETERS_MAX ; i-- ; ) { // done from the end so you can override the builtins
-      if(interpreters[i] != NULL && strcmp(selectedFileExtension, interpreters[i]->extension) == 0) {
-	interpreter = interpreters[i];
-	break;
-      }
-    }
-
-    if(interpreter == NULL) {
-      showError("No interpreter");
-      return;
-    }
-    
     append(currentPath, newLink(selectedFile->name, true, NULL));
-
     char* path = pathFromList(currentPath, false);
-    if(interpreter->isInternal) {
-      interpreter->def.internal->launch(path, NULL);
-    } else {
-      O2xInterpreter.def.internal->launch(interpreter->def.external->pathOfInterpreter,
-					  path);
-    }
+
+    doRunFile(selectedFileExtension, path);
     
     // failed
     pop(currentPath);
