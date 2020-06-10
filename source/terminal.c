@@ -5,6 +5,7 @@
 #include <dirent.h>
 #include <fat.h>
 #include <orcus.h>
+#include <unistd.h>
 
 #define BUF_SIZE 512
 char inputBuffer[BUF_SIZE];
@@ -141,6 +142,7 @@ void doMw() {
 }
 
 #define XM_BUF_SIZE 0x400000 // 4M
+extern int launchO2xFile(FILE* fp, char* path, char* arg);
 void doXm() {
   unsigned char* buffer = (unsigned char*) malloc(XM_BUF_SIZE);
   if(buffer == NULL) {
@@ -154,6 +156,18 @@ void doXm() {
   printf("\r\nTransfer complete!\n");
 
   // TODO - refactor interpreter_o2x.c to allow running an in-memory binary, note that we only have 1M of space below the heap so may need to fiddle with that / make sure we don't have any sections in the heap area
+
+  FILE* fp = fmemopen(buffer, XM_BUF_SIZE, "rb");
+  int result = 0;
+  if(fp != NULL) {
+    result = launchO2xFile(fp, "xmodem", NULL);
+    
+    fclose(fp);
+  } else {
+    printf("Could not allocate in memory file\n");
+  }
+
+  printf("Failed to execute received O2X file: %d\n", result);
   
   uartSetEcho(true);
   free(buffer);

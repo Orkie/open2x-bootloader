@@ -3,7 +3,7 @@
 +------+
 
 Can crt0 reload the bootloader correctly when an o2x terminates?
-Display icons on filer
+Display icons on filer - in info space at bottom. each interpreter needs a geticon which for external ones will read the icon of the external interpreter (could be read at the point the interpreter ini is loaded?)
 Allow button repeat
 Sort files in directory - by type (dir, file) and name
 Settings for autoboot linux from nand, autoboot autoboot.o2x from SD, display icons
@@ -11,8 +11,10 @@ Sort out error message
 Display UI controls somewhere
 Able to write new uboot image to kernel area of NAND - should perform same checks as when booting to verify the image at least looks reasonable
 
-Get isF200 working in Orcus, and also beef up SD driver - SD 1.x untested, have ordered an old 32M card off ebay
+Get isF200 working in Orcus
 - fix crt0 run bootloader code to use nand interrupt flag which is more reliable, see orcus for C equivalent
+
+LCD adjustment for F100 as per GPH firmware
 
 Implement command to run from command line
 

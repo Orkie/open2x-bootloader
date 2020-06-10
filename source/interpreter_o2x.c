@@ -21,29 +21,15 @@ typedef struct {
   uint8_t numberOfSections;
 } O2xHeader;
 
-static int launch(char* path, char* arg) {
-  if(arg != NULL) {
-    uartPrintf("Launching %s with arg %s\n", path, arg);
-  } else {
-    uartPrintf("Launching %s\n", path);
-  }
-  
-  FILE* fp = fopen(path, "rb");
-  if(fp == NULL) {
-    showError("Could not open file");
-    return 2;
-  }
-
+int launchO2xFile(FILE* fp, char* path, char* arg) {
   O2xHeader header;
   if(fread(&header, sizeof(O2xHeader), 1, fp) != 1) {
     showError("Could not read from file");
-    fclose(fp);
     return 3;
   }
 
   if(header.magic != O2X_MAGIC) {
     showError("Not a valid O2X file");
-    fclose(fp);
     return 4;
   }
 
@@ -84,7 +70,6 @@ static int launch(char* path, char* arg) {
   for(int i  = 0 ; i < header.numberOfSections ; i++) {
     if(fread(&sectionHeader, sizeof(O2xSection), 1, fp) != 1) {
       showError("Could not read from file");
-      fclose(fp);
       return 5;
     }
 
@@ -95,7 +80,6 @@ static int launch(char* path, char* arg) {
     uint32_t* dest = (uint32_t*) sectionHeader.loadAddress;
     if(fread(dest, sizeof(uint8_t), sectionHeader.length, fp) != sectionHeader.length) {
       showError("Could not read from file");
-      fclose(fp);
       return 6;
     }
 
@@ -112,11 +96,28 @@ static int launch(char* path, char* arg) {
       }
     }
   }
-  fclose(fp);
 
   uartPrintf("Jumping to 0x%x\n", jumpTo);
   JMP(jumpTo);
   return 1;// we should never reach here
+}
+
+static int launch(char* path, char* arg) {
+  if(arg != NULL) {
+    uartPrintf("Launching %s with arg %s\n", path, arg);
+  } else {
+    uartPrintf("Launching %s\n", path);
+  }
+  
+  FILE* fp = fopen(path, "rb");
+  if(fp == NULL) {
+    showError("Could not open file");
+    return 2;
+  }
+
+  int r = launchO2xFile(fp, path, arg);
+  fclose(fp);
+  return r;
 }
 
 InternalInterpreter O2xInternalInterpreter = {
