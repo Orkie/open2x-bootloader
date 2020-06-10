@@ -16,8 +16,6 @@ Get isF200 working in Orcus
 
 LCD adjustment for F100 as per GPH firmware
 
-Implement command to run from command line
-
 Patch out nand load code from uboot to make loadable uboot binaries
 
       b0:       e51f1040        ldr     r1, [pc, #-64]  ; 0x78
