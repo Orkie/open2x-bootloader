@@ -63,6 +63,10 @@ run_bootloader:
 	#define BLOCK_SIZE	512
 	#define LOAD_ADDRESS	(0x03D00000-BLOCK_SIZE)
 	#define LOAD_LENGTH	0x00080000
+
+	ldr		r1, =MEMNANDCTRLW
+	ldr		r0, =0x8080
+	strh		r0, [r1]	
 	
 	// set NAND timing
 	ldr		r1, =MEMNANDTIMEW
@@ -96,8 +100,10 @@ nand_read:
 nand_read_wait:
 	ldr		r1, =MEMNANDCTRLW
         ldrh		r0, [r1]
-	tst		r0, #0x80
+	tst		r0, #0x8000
 	beq		nand_read_wait
+	ldr		r0, =0x8080
+	strh		r0, [r1]
 
 	ldr		r1, =NFDATA
 	sub		r5, r4, #BLOCK_SIZE
@@ -112,8 +118,6 @@ nand_copy_data:
 	cmp		r3, #BLOCK_SIZE // don't copy first block
 	bne		nand_read
 
-	b launch_bootloader
-	
 	// now copy all bytes up to 0xdeadbeef to 0x0 in order to replace the vector table
 	ldr		r1, =(LOAD_ADDRESS+BLOCK_SIZE)
 	ldr		r2, =0x0
