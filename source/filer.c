@@ -432,6 +432,10 @@ static void render(uint16_t* fb) {
 static void selectFile();
 
 static void handleInput(uint32_t buttonStates, uint32_t buttonPresses) {
+  if(buttonPresses) {
+    clearError();
+  }
+  
   if(buttonPresses & DOWN && selected < (currentDirectoryLength-1)) {
     selected++;
     if(selected >= MAX_ON_SCREEN) {
