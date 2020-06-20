@@ -14,6 +14,56 @@ typedef struct FileList {
   struct FileList* next;
 } FileList;
 
+static int length(FileList* list) {
+  int i = 1;
+  FileList* current = list;
+  while((current = current->next) != NULL) {    
+    i++;
+  }
+  return i;
+}
+
+static int compare(FileList* a, FileList* b) {
+  if(a->isDir && !b->isDir) {
+    return -1;
+  } else if(!a->isDir && b->isDir) {
+    return 1;
+  } else {
+    return strcmp(a->name, b->name);
+  }
+}
+
+static FileList* sort(FileList* list) {
+  int len = length(list);
+  FileList* files[len];
+
+  FileList* current = list;
+  for(int i = 0 ; i < len ; i++) {
+    files[i] = current;
+    current = current->next;
+  }
+  
+  // bubble sort is simple but slow, hopefully it won't really matter for what we're doing
+  for(int endOfScan = len  ; endOfScan > 0 ; endOfScan--) {
+    for(int currentPairStart = 0 ; currentPairStart < endOfScan - 1 ; currentPairStart++) {
+      FileList* a = files[currentPairStart];
+      FileList* b = files[currentPairStart+1];
+      if(compare(a, b) > 0) {
+	files[currentPairStart] = b;
+	files[currentPairStart+1] = a;
+      }
+    }
+  }
+  
+  current = NULL;  
+  for(int i = len ; i-- ; ) {
+    files[i]->next = current;
+    current = files[i];
+  }
+  
+  return current;
+}
+
 static FileList* nth(FileList* list, int nth) {
   int n = 0;
   FileList* next = list;
@@ -138,7 +188,7 @@ static FileList* updateCurrentDirectoryListing() {
   
   free(path);
 
-  currentDirectoryListing = out;
+  currentDirectoryListing = sort(out);
   return out;
 }
 
@@ -212,12 +262,6 @@ static void loadInterpretersIni() {
     }
     
     interpreters[currentInterpreter++] = newInterp;
-  }
-
-  for(int i = INTERPRETERS_MAX ; i-- ;) {
-    if(interpreters[i] != NULL) {
-      uartPrintf("Interpreter for %s loaded\n", interpreters[i]->extension);
-    }
   }
 
   fclose(fp);
@@ -301,7 +345,7 @@ static void render(uint16_t* fb) {
     if(selected == i) {
       rgbPrintf(fb, 32, 56+(FONT_HEIGHT*numberRendered), RED, "* ");
     }
-    rgbPrintf(fb, 32+FONT_WIDTH*2, 56+(FONT_HEIGHT*numberRendered), selected == i ? RED : BLACK, next->name);
+    rgbPrintf(fb, 32+FONT_WIDTH*2, 56+(FONT_HEIGHT*numberRendered), selected == i ? RED : BLACK, (next->isDir ? "[%s]" : "%s"), next->name);
     
     numberRendered++;
     next = next->next;
