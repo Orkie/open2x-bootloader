@@ -23,11 +23,6 @@ bool displayError = false;
 // settings
 bool autoloadKernel;
 
-void loadSettings() {
-  // TODO - get these from the final NAND block of the bootloader
-  autoloadKernel = false;
-}
-
 struct ButtonHeldTime {
   int A_held;
   int B_held;
@@ -159,6 +154,8 @@ uint32_t decideNewPresses(uint32_t current, uint32_t last, struct ButtonHeldTime
 int main() {
   gp2xInit();
   setbuf(stdout, NULL);
+  
+  loadSettings();
   
   printf("\n\n**********************************\nOpen2x Bootloader %s\n**********************************\n", VERSION);
   printf("Auto load kernel: %s\n", autoloadKernel ? "on" : "off");

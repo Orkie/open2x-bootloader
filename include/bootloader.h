@@ -80,4 +80,6 @@ extern Interpreter KernelInterpreter;
 extern void terminalHandleChar(int c);
 extern void terminalNewline();
 
+extern void loadSettings();
+
 #endif

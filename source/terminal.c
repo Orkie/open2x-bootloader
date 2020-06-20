@@ -20,6 +20,7 @@ void doMd();
 void doMw();
 void doXm();
 void doRun();
+void doFlash();
 
 static bool startsWith(char* a, char* prefix) {
   return strncmp(prefix, a, strlen(prefix)) == 0;
@@ -49,6 +50,8 @@ static void terminalHandleCr() {
     doXm();
   } else if(startsWith(inputBuffer, "run")) {
     doRun();
+  } else if(startsWith(inputBuffer, "flash")) {
+    doFlash();
   } else {
     printf("Unknown command\n");
   }
@@ -73,6 +76,7 @@ void doHelp() {
   printf("md[whb] [addr]         - Displays the value of a memory address as a 32, 16 or 8 bit value\n");
   printf("mw[whb] [addr] [value] - Writes a value to a memory address\n");
   printf("xm                     - Receives an runs an o2x via xmodem\n");
+  printf("flash [path]           - Flash a kernel file to NAND\n");
   printf("help                   - Displays this message\n");
 }
 
@@ -204,4 +208,33 @@ void doRun() {
   
  DONE:
   Filer.deinit();
+}
+
+void doFlash() {
+  /*  uint8_t buf[NAND_BLOCK_SIZE];
+  nandRead(NAND_BLOCK_SIZE*4, 1, buf);
+  for(int i = 0 ; i < NAND_BLOCK_SIZE ; i++) {
+    uartPrintf("%x ", buf[i]);
+  }
+  uartPrintf("\n");
+
+  nandErase(NAND_BLOCK_SIZE*4, 1);
+
+  memset(buf, 0, NAND_BLOCK_SIZE);
+  nandRead(NAND_BLOCK_SIZE*4, 1, buf);
+  for(int i = 0 ; i < NAND_BLOCK_SIZE ; i++) {
+    uartPrintf("%x ", buf[i]);
+  }
+  uartPrintf("\n");
+
+  memset(buf, 0x23, NAND_BLOCK_SIZE);
+  nandWrite(NAND_BLOCK_SIZE*4, 1, buf);
+
+  memset(buf, 0, NAND_BLOCK_SIZE);
+  nandRead(NAND_BLOCK_SIZE*4, 1, buf);
+  for(int i = 0 ; i < NAND_BLOCK_SIZE ; i++) {
+    uartPrintf("%x ", buf[i]);
+  }
+  uartPrintf("\n");*/
+  printf("TODO - implement me!\n");
 }
