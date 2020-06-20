@@ -37,6 +37,7 @@ typedef struct {
 #define FONT_HEIGHT 12
 #define FONT_WIDTH 6
 #define RED 0xF800
+#define WHITE 0xFFFF
 #define BLACK 0x0000
 
 typedef struct {

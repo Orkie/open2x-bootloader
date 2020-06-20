@@ -224,28 +224,13 @@ int main() {
 	currentView->render(nextFb);
       }
 
-      if(displayError) {
-	int errorChars = strlen(errorMessage);
-	int errorLines = 0;
-	int longestLine = 0;
-	
-	int lineCharCount = 0;
-	for(int i = 0 ; i < errorChars ; i++) {
-	  if(errorMessage[i] == '\n') {
-	    errorLines++;
-	    if(lineCharCount > longestLine) {
-	      longestLine = lineCharCount;
-	    }
-	    lineCharCount = 0;
-	  }
-	  lineCharCount++;
-	}
-	
-	rgbPrintf(nextFb,
-		  21+((218-21)/2 - (FONT_WIDTH*longestLine)/2),
-		  174+((218-174)/2 - (FONT_HEIGHT*errorLines)/2),
-		  RED,
-		  errorMessage);
+      if(displayError) {	
+	rgbPrintfBg(nextFb,
+		    20,
+		    224,
+		    WHITE,
+		    RED,
+		    errorMessage);
       }
       
       lcdWaitNextVSync();
@@ -266,6 +251,7 @@ void transitionView(View* to) {
   
   if(to->init != NULL && to->init(errorMessage)) {
     displayError = true;
+    renderRequired = true;
   } else {
     currentView = to;
     renderRequired = true;

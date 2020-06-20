@@ -4,7 +4,6 @@
 
 Display icons on filer - in info space at bottom. each interpreter needs a geticon which for external ones will read the icon of the external interpreter (could be read at the point the interpreter ini is loaded?)
 Settings for autoboot linux from nand, autoboot autoboot.o2x from SD, display icons
-Sort out error message
 Display UI controls somewhere
 Able to write new uboot image to kernel area of NAND - should perform same checks as when booting to verify the image at least looks reasonable
 
