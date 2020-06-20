@@ -160,8 +160,6 @@ void doXm() {
   usleep(10000);
   printf("\r\nTransfer complete!\n");
 
-  // TODO - refactor interpreter_o2x.c to allow running an in-memory binary, note that we only have 1M of space below the heap so may need to fiddle with that / make sure we don't have any sections in the heap area
-
   FILE* fp = fmemopen(buffer, XM_BUF_SIZE, "rb");
   int result = 0;
   if(fp != NULL) {

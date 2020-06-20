@@ -159,8 +159,6 @@ static FileList* currentDirectoryListing = NULL;
 static int currentDirectoryLength = 0;
 
 static FileList* updateCurrentDirectoryListing() {
-  // TODO sort such that directories are first, in alphabetical order, followed by files, in alphabetical order
-  
   if(currentDirectoryListing != NULL) {
     freeList(currentDirectoryListing);
   }
@@ -183,7 +181,7 @@ static FileList* updateCurrentDirectoryListing() {
     closedir(dp);
   } else {
     uartPrintf("Couldn't open the directory\n");
-    // TODO - report this error back to the user
+    showError("Couldn't open directory");
   }
   
   free(path);
@@ -347,7 +345,8 @@ static int init(char* error) {
 
   for(int i = INTERPRETERS_MAX ; i >= PREDEFINED_INTERPRETERS ; i--) {
     if(interpreters[i] != NULL) {
-      free(interpreters[i]); // TODO - free this fully
+      free(interpreters[i]->def.external->pathOfInterpreter);
+      free(interpreters[i]);
     }
     interpreters[i] = NULL;
   }
@@ -378,7 +377,7 @@ static void handleSelected(FileList* selected, uint16_t* icon, char* name, bool*
   }
 
   Interpreter* interpreter = findInterpreter(selected);
-  if(interpreter == NULL) { // TODO - handle external interpreters
+  if(interpreter == NULL) {
     return;
   }
   
