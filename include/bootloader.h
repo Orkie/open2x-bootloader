@@ -5,6 +5,9 @@
 #include <gp2xtypes.h>
 
 #include "background_bin.h"
+#include "linux_bin.h"
+#include "unknown_bin.h"
+#include "folder_bin.h"
 #include "kernel.h"
 
 #define VERSION "v1.0"
@@ -25,6 +28,7 @@ typedef struct {
 extern void transitionView(View* to);
 extern void clearError();
 extern void showError(const char* msg);
+extern void blit(uint16_t* source, int sw, int sh, uint16_t* dest, int dx, int dy, int dw, int dh);
 
 extern View MainMenu;
 extern View Filer;
@@ -39,9 +43,12 @@ typedef struct {
 #define RED 0xF800
 #define WHITE 0xFFFF
 #define BLACK 0x0000
+#define MAGENTA 0xF81F
 
 typedef struct {
   int (*launch)(char* path, char* arg);
+  int (*getName)(char* path, char* output);
+  int (*getIcon)(char* path, uint16_t* output);
 } InternalInterpreter;
 
 typedef struct {

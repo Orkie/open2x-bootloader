@@ -120,8 +120,54 @@ static int launch(char* path, char* arg) {
   return r;
 }
 
+static int getName(char* path, char* output) {
+  FILE* fp = fopen(path, "rb");
+  if(fp == NULL) {
+    return 1;
+  }
+
+  O2xHeader header;
+  if(fread(&header, sizeof(O2xHeader), 1, fp) != 1) {
+    fclose(fp);
+    return 2;
+  }
+
+  if(header.magic != O2X_MAGIC) {
+    fclose(fp);
+    return 3;
+  }
+
+  strcpy(output, header.name);
+  fclose(fp);
+  return 0;
+}
+
+static int getIcon(char* path, uint16_t* output) {
+  FILE* fp = fopen(path, "rb");
+  if(fp == NULL) {
+    return 1;
+  }
+
+  O2xHeader header;
+  if(fread(&header, sizeof(O2xHeader), 1, fp) != 1) {
+    fclose(fp);
+    return 2;
+  }
+
+  if(header.magic != O2X_MAGIC) {
+    fclose(fp);
+    return 3;
+  }
+
+  memcpy(output, header.icon, 16*16*2);
+  fclose(fp);
+  return 0;
+}
+
 InternalInterpreter O2xInternalInterpreter = {
-  &launch
+					      &launch,
+					      &getName,
+					      &getIcon
 };
 
 Interpreter O2xInterpreter = {

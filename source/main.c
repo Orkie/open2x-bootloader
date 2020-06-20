@@ -267,3 +267,14 @@ void showError(const char* msg) {
   displayError = true;
   triggerRender();
 }
+
+void blit(uint16_t* source, int sw, int sh, uint16_t* dest, int dx, int dy, int dw, int dh) {
+  for(int y = sh ; y-- ; ) {
+    for(int x = sh ; x-- ; ) {
+      uint16_t pixel = *(source + (sw*y) + x);
+      if(pixel != MAGENTA) {
+	*(dest + ((dy+y)*dw) + (dx+x)) = pixel;
+      }
+    }
+  }
+}

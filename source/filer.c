@@ -267,6 +267,45 @@ static void loadInterpretersIni() {
   fclose(fp);
 }
 
+static char* decideExtension(FileList* file) {
+  char* selectedFileExtension = strrchr(file->name, '.');
+  if(selectedFileExtension == NULL) {
+    return NULL;
+  }
+  selectedFileExtension++;
+  return selectedFileExtension;
+}
+
+static Interpreter* findInterpreter(FileList* file) {
+  char* extension = decideExtension(file);
+  if(extension == NULL) {
+    return NULL;
+  }
+
+  char copiedExtn[strlen(extension)];
+  strcpy(copiedExtn, extension);
+  
+  char* currentChar = copiedExtn;
+  while(*currentChar != '\0') {
+    *currentChar = tolower(*currentChar);
+    currentChar++;
+  }
+
+  Interpreter* interpreter = NULL;
+  for(int i = INTERPRETERS_MAX ; i-- ; ) { // done from the end so you can override the builtins
+    if(interpreters[i] != NULL && strcmp(copiedExtn, interpreters[i]->extension) == 0) {
+      interpreter = interpreters[i];
+      break;
+    }
+  }
+
+  if(interpreter == NULL) {
+    return NULL;
+  }
+
+  return interpreter;
+}
+
 void doRunFile(char* extension, char* path) {
   char* currentChar = extension;
   while(*currentChar != '\0') {
@@ -327,6 +366,35 @@ static void deinit() {
   fatUnmount("sd");
 }
 
+static void handleSelected(FileList* selected, uint16_t* icon, char* name) {
+
+  strcpy(name, "Unknown file type");
+  memcpy(icon, unknown_bin, 16*16*2);
+
+  if(selected->isDir) {
+    strcpy(name, "Directory");
+    memcpy(icon, folder_bin, 16*16*2);
+    return;
+  }
+
+  Interpreter* interpreter = findInterpreter(selected);
+  if(interpreter == NULL) { // TODO - handle external interpreters
+    return;
+  }
+  
+  append(currentPath, newLink(selected->name, true, NULL));
+  char* path = pathFromList(currentPath, false);
+  pop(currentPath);
+  
+  if(interpreter->isInternal) {
+    interpreter->def.internal->getName(path, name);
+    interpreter->def.internal->getIcon(path, icon);
+  } else {
+    O2xInterpreter.def.internal->getName(interpreter->def.external->pathOfInterpreter, name);
+    O2xInterpreter.def.internal->getIcon(interpreter->def.external->pathOfInterpreter, icon);    
+  }
+}
+
 static void render(uint16_t* fb) {
   int numberRendered = 0;
   FileList* next = nth(currentDirectoryListing, startRenderingFrom);
@@ -334,6 +402,10 @@ static void render(uint16_t* fb) {
   char* path = pathFromList(currentPath->next, false);
   rgbPrintf(fb, 32, 32, 0x0000, "/%s", path);
   free(path);
+
+  uint16_t icon[16*16];
+  char name[32];
+  memset(name, '\0', 32);
 
   char buf[10];
   sprintf(buf, "%.3d / %.3d", selected > 998 || selected < 0 ? 0 : selected+1, currentDirectoryLength > 999 || currentDirectoryLength < 0 ? 0 : currentDirectoryLength);
@@ -344,14 +416,17 @@ static void render(uint16_t* fb) {
     
     if(selected == i) {
       rgbPrintf(fb, 32, 56+(FONT_HEIGHT*numberRendered), RED, "* ");
+      handleSelected(next, icon, name);
     }
     rgbPrintf(fb, 32+FONT_WIDTH*2, 56+(FONT_HEIGHT*numberRendered), selected == i ? RED : BLACK, (next->isDir ? "[%s]" : "%s"), next->name);
     
     numberRendered++;
     next = next->next;
   }
-  // need a show/hide unsupported extentions feature
-  // TODO - render instructions in bottom area
+
+  blit(icon, 16, 16, fb, 32, 182, 320, 240);
+  rgbPrintf(fb, 32+16+8, 184, BLACK, "%s", name);
+  // TODO need a show/hide unsupported extentions feature
 }
 
 static void selectFile();
