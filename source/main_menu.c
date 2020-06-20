@@ -27,6 +27,7 @@ static void render(uint16_t* fb) {
     }
     rgbPrintf(fb, 32+FONT_WIDTH*2, 56+(FONT_HEIGHT*i), selected == i ? 0xF800 : 0x0000, menu[i].title);
   }
+  rgbPrintf(fb, 32, 202, BLACK, "B: Select");
 }
 
 static void handleInput(uint32_t buttonStates, uint32_t buttonPresses) {

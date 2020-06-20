@@ -366,7 +366,7 @@ static void deinit() {
   fatUnmount("sd");
 }
 
-static void handleSelected(FileList* selected, uint16_t* icon, char* name) {
+static void handleSelected(FileList* selected, uint16_t* icon, char* name, bool* canFlash) {
 
   strcpy(name, "Unknown file type");
   memcpy(icon, unknown_bin, 16*16*2);
@@ -387,8 +387,11 @@ static void handleSelected(FileList* selected, uint16_t* icon, char* name) {
   pop(currentPath);
   
   if(interpreter->isInternal) {
-    interpreter->def.internal->getName(path, name);
-    interpreter->def.internal->getIcon(path, icon);
+    int nameRes = interpreter->def.internal->getName(path, name);
+    int iconRes = interpreter->def.internal->getIcon(path, icon);
+    if(interpreter == &KernelInterpreter && nameRes == 0 && iconRes == 0) {
+      *canFlash = true;
+    }
   } else {
     O2xInterpreter.def.internal->getName(interpreter->def.external->pathOfInterpreter, name);
     O2xInterpreter.def.internal->getIcon(interpreter->def.external->pathOfInterpreter, icon);    
@@ -405,6 +408,7 @@ static void render(uint16_t* fb) {
 
   uint16_t icon[16*16];
   char name[32];
+  bool canFlash = false;
   memset(name, '\0', 32);
 
   char buf[10];
@@ -416,7 +420,7 @@ static void render(uint16_t* fb) {
     
     if(selected == i) {
       rgbPrintf(fb, 32, 56+(FONT_HEIGHT*numberRendered), RED, "* ");
-      handleSelected(next, icon, name);
+      handleSelected(next, icon, name, &canFlash);
     }
     rgbPrintf(fb, 32+FONT_WIDTH*2, 56+(FONT_HEIGHT*numberRendered), selected == i ? RED : BLACK, (next->isDir ? "[%s]" : "%s"), next->name);
     
@@ -426,6 +430,9 @@ static void render(uint16_t* fb) {
 
   blit(icon, 16, 16, fb, 32, 182, 320, 240);
   rgbPrintf(fb, 32+16+8, 184, BLACK, "%s", name);
+
+  rgbPrintf(fb, 32, 202, BLACK, (canFlash ? "B: Select | X: Back | Y: Flash" : "B: Select | X: Back"));
+  
   // TODO need a show/hide unsupported extentions feature
 }
 

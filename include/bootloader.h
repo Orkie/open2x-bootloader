@@ -3,12 +3,13 @@
 #include <orcus.h>
 #include <gp2xregs.h>
 #include <gp2xtypes.h>
+#include "kernel.h"
 
+// graphics
 #include "background_bin.h"
 #include "linux_bin.h"
 #include "unknown_bin.h"
 #include "folder_bin.h"
-#include "kernel.h"
 
 #define VERSION "v1.0"
 
