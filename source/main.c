@@ -65,23 +65,22 @@ int main() {
   terminalNewline();
   int gotChar = EOF;
 
+  uint32_t lastTick = timerGet();
+
   while(1) {
 
+    // terminal character handler
     while((gotChar = uartGetc(false)) != EOF) {
       terminalHandleChar(gotChar);
     }
-    
-    uint32_t currentButtonState = btnState();
-    uint32_t nextButtonState;
-    while(1) {
-      usleep(5000);
-      nextButtonState = btnState();
-      if(nextButtonState == currentButtonState) {
-	break;
-      }
-      currentButtonState = nextButtonState;
-    }
-    
+
+    // how long was it since we last looped?
+    int msSinceLastLoop = timerNsSince(lastTick, &lastTick)/1000000;
+
+    // figure out which button events we want to raise
+    uint32_t currentButtonState = btnStateDebounced();
+
+    // deal with current state
     if(currentView != NULL) {
       currentView->handleInput(currentButtonState, currentButtonState&(~previousButtonState));
     }

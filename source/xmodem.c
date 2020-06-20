@@ -51,11 +51,10 @@
 #define MAXRETRANS 25
 
 static int _inbyte(unsigned short timeout) {
-  uint32_t timeoutTick = (timeout * 7407) + 1;
-  timerSet(1);
+  uint32_t startTick = timerGet();
   int c;
   while((c = uartGetc(false)) == EOF) {
-    if(timeout && timerGet() >= timeoutTick) {
+    if(timeout && (timerNsSince(startTick, NULL) >= (timeout*1000000))) {
       return -2;
     }
   }
