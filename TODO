@@ -2,11 +2,9 @@
 | TODO |
 +------+
 
-Able to write new uboot image to kernel area of NAND - should perform same checks as when booting to verify the image at least looks reasonable - secondary actions needed on the interpreters with Y button, a flash option for kernel uboot image
-
 Able to compile as a uboot kernel, and save the settings to SD instead of NAND for this case
 
-LCD adjustment for F100 as per GPH firmware
+LCD adjustment for F100 as per GPH firmware?
 
 Patch out nand load code from uboot to make loadable uboot binaries
 
@@ -26,5 +24,4 @@ Patch out nand load code from uboot to make loadable uboot binaries
 Can we replace b0 to 17c with nops?
 nop is 0xe1a00000 (00 00 a0 e1 in hex)
 
-// need to pad bootloader to 0x80000 bytes so we make sure to erase the complete area. We should then reserve the final 512 bytes for config
 
