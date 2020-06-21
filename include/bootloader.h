@@ -32,11 +32,13 @@ extern void showError(const char* msg);
 extern void blit(uint16_t* source, int sw, int sh, uint16_t* dest, int dx, int dy, int dw, int dh);
 
 extern View MainMenu;
+extern View SettingsMenu;
 extern View Filer;
 
 typedef struct {
   char* title;
   void (*callback)();
+  bool* onOff;
 } MenuItem;
 
 #define FONT_HEIGHT 12
@@ -80,6 +82,13 @@ extern Interpreter KernelInterpreter;
 extern void terminalHandleChar(int c);
 extern void terminalNewline();
 
-extern void loadSettings();
+typedef struct {
+  uint32_t magic;
+  bool autobootNand;
+  bool autobootSd;
+} BootloaderSettings;
+extern BootloaderSettings* loadSettings();
+extern void saveSettings();
+extern BootloaderSettings currentSettings;
 
 #endif

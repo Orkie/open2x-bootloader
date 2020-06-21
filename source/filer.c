@@ -365,7 +365,7 @@ static void deinit() {
   fatUnmount("sd");
 }
 
-static void handleSelected(FileList* selected, uint16_t* icon, char* name, bool* canFlash) {
+static int handleSelected(FileList* selected, uint16_t* icon, char* name, bool* canFlash) {
 
   strcpy(name, "Unknown file type");
   memcpy(icon, unknown_bin, 16*16*2);
@@ -373,12 +373,12 @@ static void handleSelected(FileList* selected, uint16_t* icon, char* name, bool*
   if(selected->isDir) {
     strcpy(name, "Directory");
     memcpy(icon, folder_bin, 16*16*2);
-    return;
+    return 0;
   }
 
   Interpreter* interpreter = findInterpreter(selected);
   if(interpreter == NULL) {
-    return;
+    return 1;
   }
   
   append(currentPath, newLink(selected->name, true, NULL));
@@ -395,6 +395,7 @@ static void handleSelected(FileList* selected, uint16_t* icon, char* name, bool*
     O2xInterpreter.def.internal->getName(interpreter->def.external->pathOfInterpreter, name);
     O2xInterpreter.def.internal->getIcon(interpreter->def.external->pathOfInterpreter, icon);    
   }
+  return 0;
 }
 
 static void render(uint16_t* fb) {

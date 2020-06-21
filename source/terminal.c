@@ -21,6 +21,7 @@ void doMw();
 void doXm();
 void doRun();
 void doFlash();
+void doKernel();
 
 static bool startsWith(char* a, char* prefix) {
   return strncmp(prefix, a, strlen(prefix)) == 0;
@@ -52,6 +53,8 @@ static void terminalHandleCr() {
     doRun();
   } else if(startsWith(inputBuffer, "flash")) {
     doFlash();
+  } else if(equals(inputBuffer, "kernel")) {
+    doKernel();
   } else {
     printf("Unknown command\n");
   }
@@ -76,6 +79,7 @@ void doHelp() {
   printf("md[whb] [addr]         - Displays the value of a memory address as a 32, 16 or 8 bit value\n");
   printf("mw[whb] [addr] [value] - Writes a value to a memory address\n");
   printf("xm                     - Receives an runs an o2x via xmodem\n");
+  printf("kernel                 - Boots kernel from NAND\n");
   printf("flash [path]           - Flash a kernel file to NAND\n");
   printf("help                   - Displays this message\n");
 }
@@ -211,30 +215,58 @@ void doRun() {
 }
 
 void doFlash() {
-  /*  uint8_t buf[NAND_BLOCK_SIZE];
-  nandRead(NAND_BLOCK_SIZE*4, 1, buf);
-  for(int i = 0 ; i < NAND_BLOCK_SIZE ; i++) {
-    uartPrintf("%x ", buf[i]);
+  char arg[BUF_SIZE];
+  memset(arg, '\0', BUF_SIZE);
+  int r = sscanf(inputBuffer, "flash %s", arg);
+  if(r != 1) {
+    printf("Invalid invocation of flash\n");
+    return;
   }
-  uartPrintf("\n");
 
-  nandErase(NAND_BLOCK_SIZE*4, 1);
-
-  memset(buf, 0, NAND_BLOCK_SIZE);
-  nandRead(NAND_BLOCK_SIZE*4, 1, buf);
-  for(int i = 0 ; i < NAND_BLOCK_SIZE ; i++) {
-    uartPrintf("%x ", buf[i]);
+  if(!fatInitDefault()) {
+    printf("Couldn't open SD card\n");
   }
-  uartPrintf("\n");
-
-  memset(buf, 0x23, NAND_BLOCK_SIZE);
-  nandWrite(NAND_BLOCK_SIZE*4, 1, buf);
-
-  memset(buf, 0, NAND_BLOCK_SIZE);
-  nandRead(NAND_BLOCK_SIZE*4, 1, buf);
-  for(int i = 0 ; i < NAND_BLOCK_SIZE ; i++) {
-    uartPrintf("%x ", buf[i]);
+  
+  FILE* fp = fopen(arg, "rb");
+  if(fp == NULL) {
+    printf("Could not open file %s\n", arg);
+    return;
   }
-  uartPrintf("\n");*/
-  printf("TODO - implement me!\n");
+
+  fseek(fp, 0L, SEEK_END);
+  int size = ftell(fp);
+  rewind(fp);
+
+  if(size > KERNEL_REGION_BYTES) {
+    printf("File too large for kernel region of NAND, can be no more than 0x%x bytes\n", KERNEL_REGION_BYTES);
+    fclose(fp);
+    return;
+  }
+
+  void* buf = malloc(KERNEL_REGION_BYTES);
+  if(buf == NULL) {
+    fclose(fp);
+    printf("File too large to read\n");
+    return;
+  }
+  memset(buf, 0xff, KERNEL_REGION_BYTES);
+  
+  if(fread(buf, sizeof(uint8_t), size, fp) != size) {
+    fclose(fp);
+    free(buf);
+    printf("Could not read img\n");
+    return;
+  }
+
+  printf("Loaded file %s\n", arg);
+
+  flashKernel(buf);
+
+  fclose(fp);
+  free(buf);
+}
+
+void doKernel() {
+  launchKernelFromNand();
+  printf("Failed to launch kernel\n");
 }

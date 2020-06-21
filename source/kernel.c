@@ -8,6 +8,30 @@
 int prepareImage(void* img, uint32_t* entry);
 int gunzip(uint8_t* data, unsigned int length, void* dest);
 
+int flashKernel(void* image) {
+  
+  UbootHeader* header = (UbootHeader*) image;
+
+  if(B2L(header->ih_magic) != UBOOT_MAGIC_NUMBER) {
+    uartPrintf("Not a valid u-boot image\n");
+    return 1;
+  }
+
+  if(header->ih_arch != 2) {
+    uartPrintf("Not an ARM image\n");
+    return 2;
+  }
+
+  uartPrintf("Flashing kernel image...\n");
+  uartPrintf("Erasing region...\n");
+  nandErase(KERNEL_REGION_ADDR, KERNEL_REGION_BYTES>>9);
+  uartPrintf("Writing new data...\n");
+  nandWrite(KERNEL_REGION_ADDR, KERNEL_REGION_BYTES>>9, image);
+  uartPrintf("Done!\n");
+  
+  return 0;
+}
+
 int launchKernel(void* image) {
   uint32_t entry;
 
@@ -30,8 +54,14 @@ int launchKernel(void* image) {
 
 void* loadKernelFromNand() {
   void* dest = malloc(KERNEL_REGION_BYTES);
-  nandRead(0x80000, KERNEL_REGION_BYTES>>9, dest);
-  uartPrintf("Loaded data from NAND at 0x%x\n", dest);
+  nandRead(KERNEL_REGION_ADDR, KERNEL_REGION_BYTES>>9, dest);
+
+  for(int i = 0 ; i < 32 ; i++) {
+    printf("%.2x ", ((uint8_t*)dest)[i]);
+  }
+  printf("\n");
+  
+  uartPrintf("Loaded kernel data from NAND at 0x%x\n", dest);
   return dest;
 }
 

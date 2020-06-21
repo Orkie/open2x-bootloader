@@ -1,6 +1,7 @@
 #ifndef __KERNEL_H__
 #define __KERNEL_H
 
+#define KERNEL_REGION_ADDR 0x80000
 #define KERNEL_REGION_BYTES 0x120000
 #define UBOOT_MAGIC_NUMBER 0x27051956
 #define GP2X_KERNEL_ARCH 395
@@ -26,5 +27,6 @@ typedef struct {
 extern void* loadKernelFromNand();
 extern int launchKernel(void* image);
 extern int launchKernelFromNand();
+extern int flashKernel(void* image);
 
 #endif

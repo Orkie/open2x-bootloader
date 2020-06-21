@@ -154,17 +154,27 @@ uint32_t decideNewPresses(uint32_t current, uint32_t last, struct ButtonHeldTime
 int main() {
   gp2xInit();
   setbuf(stdout, NULL);
+
+  if((btnState()&L) && (btnState()&R)) {
+    saveSettings();
+    showError("Settings were reset");
+  }
   
   loadSettings();
   
   printf("\n\n**********************************\nOpen2x Bootloader %s\n**********************************\n", VERSION);
-  printf("Auto load kernel: %s\n", autoloadKernel ? "on" : "off");
+  printf("Auto boot NAND: %s\n", currentSettings.autobootNand ? "on" : "off");
+  printf("Auto boot SD: %s\n", currentSettings.autobootSd ? "on" : "off");
   printf("**********************************\n");
 
-  if(autoloadKernel && !(btnState()&START)) {
+  // TODO - look at brief screen corruption if file is missing
+  if(currentSettings.autobootNand && !(btnState()&START)) {
     launchKernelFromNand();
-    printf("Failed to load kernel from NAND!\n");
-    // TODO - if we reach this point, loading kernel has failed and we should show something on the screen
+    showError("Failed to launch kernel");
+  }
+
+  if(currentSettings.autobootSd && !(btnState()&START)) {
+    O2xInterpreter.def.internal->launch("sd:/autoboot.o2x", NULL);
   }
   
   uint16_t* fb0 = malloc(320*240*2);

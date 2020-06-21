@@ -7,14 +7,20 @@ static void browseSd() {
   transitionView(&Filer);
 }
 
-static void bootFromNand() {
-  launchKernelFromNand(); // TODO - we want to be able to set either boot from a gp2xkernel.img in SD root, or from NAND. If SD fails, offer NAND
+static void settings() {
+  transitionView(&SettingsMenu);
 }
 
-const MenuItem menu[] = {
+static void bootFromNand() {
+  launchKernelFromNand();
+  showError("Could not launch kernel");
+  triggerRender();
+}
+
+static const MenuItem menu[] = {
   {.title = "Browse SD card", .callback = &browseSd},
   {.title = "Boot Linux", .callback = &bootFromNand},
-  {.title = "Settings", .callback = NULL}
+  {.title = "Settings", .callback = &settings}
 };
 
 static void render(uint16_t* fb) {
