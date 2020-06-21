@@ -68,10 +68,14 @@ static void handleInput(uint32_t buttonStates, uint32_t buttonPresses) {
     triggerRender();
   }
 
-  if(buttonPresses & B || buttonPresses & START) {
+  if(buttonPresses & B) {
     *(menu[selected].onOff) = !(*menu[selected].onOff);
     saveSettings();
     triggerRender();
+  }
+
+  if(buttonPresses & X) {
+    transitionView(&MainMenu);
   }
 }
 

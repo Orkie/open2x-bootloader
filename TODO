@@ -21,6 +21,8 @@ Patch out nand load code from uboot to make loadable uboot binaries
      17c:       daffffd9        ble     0xe8
      180:       e51ff004        ldr     pc, [pc, #-4]   ; 0x184
 
+40101fe5
+CC F0 9F E5
 Can we replace b0 to 17c with nops?
 nop is 0xe1a00000 (00 00 a0 e1 in hex)
 
