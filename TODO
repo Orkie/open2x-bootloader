@@ -6,24 +6,4 @@ Able to compile as a uboot kernel, and save the settings to SD instead of NAND f
 
 LCD adjustment for F100 as per GPH firmware?
 
-Patch out nand load code from uboot to make loadable uboot binaries
-
-      b0:       e51f1040        ldr     r1, [pc, #-64]  ; 0x78
-      b4:       e2000000        and     r0, r0, #0
-      b8:       e2800c07        add     r0, r0, #1792   ; 0x700
-      bc:       e28000f0        add     r0, r0, #240    ; 0xf0
-      c0:       e280000f        add     r0, r0, #15
-....
-     16c:       e3580c02        cmp     r8, #512        ; 0x200
-     170:       1afffff8        bne     0x158
-     174:       e2866c02        add     r6, r6, #512    ; 0x200
-     178:       e1560009        cmp     r6, r9
-     17c:       daffffd9        ble     0xe8
-     180:       e51ff004        ldr     pc, [pc, #-4]   ; 0x184
-
-40101fe5
-CC F0 9F E5
-Can we replace b0 to 17c with nops?
-nop is 0xe1a00000 (00 00 a0 e1 in hex)
-
 
