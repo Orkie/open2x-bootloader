@@ -194,6 +194,8 @@ static int startRenderingFrom = 0;
 static int selected = 0;
 static bool canFlash = false;
 static bool seekConfirmation = false;
+static bool flashing = false;
+static bool performRealFlash = false;
 
 #define INTERPRETERS_MAX 130
 #define PREDEFINED_INTERPRETERS 2
@@ -442,6 +444,14 @@ static void render(uint16_t* fb) {
     rgbPrintf(fb, 64+4, 88+4+FONT_HEIGHT, BLACK, "Please confirm you wish to\nflash this kernel");
     rgbPrintf(fb, 64+((192>>1)-((FONT_WIDTH*14)>>1)), 88+64-FONT_HEIGHT-4, BLACK, "B: Yes | X: No");
   }
+
+  if(flashing) {
+    drawBox(fb, 320, 64, 88, 192, 64, WHITE);
+    drawBoxOutline(fb, 320, 64, 88, 192, 64, 0x8410);
+    rgbPrintf(fb, 64+((192>>1)-((FONT_WIDTH*8)>>1)), 88+4, RED, "Flashing");
+    performRealFlash = true;
+    flashing = false;
+  }
 }
 
 static void selectFile();
@@ -527,7 +537,19 @@ static void handleInputConfirmFlash(uint32_t buttonStates, uint32_t buttonPresse
     return;
   }
 
-  if(buttonPresses & B) {
+  if(buttonPresses & B) {    
+    seekConfirmation = false;
+    flashing = true;
+    triggerRender();
+  }
+}
+
+static void handleInput(uint32_t buttonStates, uint32_t buttonPresses) {
+  if(buttonPresses) {
+    clearError();
+  }
+
+  if(performRealFlash) {
     FileList* selectedFile = nth(currentDirectoryListing, selected);
     if(selectedFile == NULL) {
       return;
@@ -538,15 +560,9 @@ static void handleInputConfirmFlash(uint32_t buttonStates, uint32_t buttonPresse
     pop(currentPath);
 
     flashKernelFromFile(path);
-    
-    seekConfirmation = false;
+    performRealFlash = false;
     triggerRender();
-  }
-}
-
-static void handleInput(uint32_t buttonStates, uint32_t buttonPresses) {
-  if(buttonPresses) {
-    clearError();
+    return;
   }
 
   if(seekConfirmation) {
