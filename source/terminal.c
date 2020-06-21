@@ -227,43 +227,7 @@ void doFlash() {
     printf("Couldn't open SD card\n");
   }
   
-  FILE* fp = fopen(arg, "rb");
-  if(fp == NULL) {
-    printf("Could not open file %s\n", arg);
-    return;
-  }
-
-  fseek(fp, 0L, SEEK_END);
-  int size = ftell(fp);
-  rewind(fp);
-
-  if(size > KERNEL_REGION_BYTES) {
-    printf("File too large for kernel region of NAND, can be no more than 0x%x bytes\n", KERNEL_REGION_BYTES);
-    fclose(fp);
-    return;
-  }
-
-  void* buf = malloc(KERNEL_REGION_BYTES);
-  if(buf == NULL) {
-    fclose(fp);
-    printf("File too large to read\n");
-    return;
-  }
-  memset(buf, 0xff, KERNEL_REGION_BYTES);
-  
-  if(fread(buf, sizeof(uint8_t), size, fp) != size) {
-    fclose(fp);
-    free(buf);
-    printf("Could not read img\n");
-    return;
-  }
-
-  printf("Loaded file %s\n", arg);
-
-  flashKernel(buf);
-
-  fclose(fp);
-  free(buf);
+  flashKernelFromFile(arg);
 }
 
 void doKernel() {

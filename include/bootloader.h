@@ -30,6 +30,8 @@ extern void transitionView(View* to);
 extern void clearError();
 extern void showError(const char* msg);
 extern void blit(uint16_t* source, int sw, int sh, uint16_t* dest, int dx, int dy, int dw, int dh);
+extern void drawBox(uint16_t* dest, int dw, int x, int y, int w, int h, uint16_t colour);
+extern void drawBoxOutline(uint16_t* dest, int dw, int x, int y, int w, int h, uint16_t colour);
 
 extern View MainMenu;
 extern View SettingsMenu;

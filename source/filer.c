@@ -192,6 +192,8 @@ static FileList* updateCurrentDirectoryListing() {
 
 static int startRenderingFrom = 0;
 static int selected = 0;
+static bool canFlash = false;
+static bool seekConfirmation = false;
 
 #define INTERPRETERS_MAX 130
 #define PREDEFINED_INTERPRETERS 2
@@ -365,7 +367,7 @@ static void deinit() {
   fatUnmount("sd");
 }
 
-static int handleSelected(FileList* selected, uint16_t* icon, char* name, bool* canFlash) {
+static int handleSelected(FileList* selected, uint16_t* icon, char* name) {
 
   strcpy(name, "Unknown file type");
   memcpy(icon, unknown_bin, 16*16*2);
@@ -389,7 +391,7 @@ static int handleSelected(FileList* selected, uint16_t* icon, char* name, bool* 
     int nameRes = interpreter->def.internal->getName(path, name);
     int iconRes = interpreter->def.internal->getIcon(path, icon);
     if(interpreter == &KernelInterpreter && nameRes == 0 && iconRes == 0) {
-      *canFlash = true;
+      canFlash = true;
     }
   } else {
     O2xInterpreter.def.internal->getName(interpreter->def.external->pathOfInterpreter, name);
@@ -408,7 +410,7 @@ static void render(uint16_t* fb) {
 
   uint16_t icon[16*16];
   char name[32];
-  bool canFlash = false;
+  canFlash = false;
   memset(name, '\0', 32);
 
   char buf[10];
@@ -420,7 +422,7 @@ static void render(uint16_t* fb) {
     
     if(selected == i) {
       rgbPrintf(fb, 32, 56+(FONT_HEIGHT*numberRendered), RED, "* ");
-      handleSelected(next, icon, name, &canFlash);
+      handleSelected(next, icon, name);
     }
     rgbPrintf(fb, 32+FONT_WIDTH*2, 56+(FONT_HEIGHT*numberRendered), selected == i ? RED : BLACK, (next->isDir ? "[%s]" : "%s"), next->name);
     
@@ -433,16 +435,18 @@ static void render(uint16_t* fb) {
 
   rgbPrintf(fb, 32, 202, BLACK, (canFlash ? "B: Select | X: Back | Y: Flash" : "B: Select | X: Back"));
   
-  // TODO need a show/hide unsupported extentions feature
+  if(seekConfirmation) {
+    drawBox(fb, 320, 64, 88, 192, 64, WHITE);
+    drawBoxOutline(fb, 320, 64, 88, 192, 64, 0x8410);
+    rgbPrintf(fb, 64+((192>>1)-((FONT_WIDTH*13)>>1)), 88+4, RED, "Are you sure?");
+    rgbPrintf(fb, 64+4, 88+4+FONT_HEIGHT, BLACK, "Please confirm you wish to\nflash this kernel");
+    rgbPrintf(fb, 64+((192>>1)-((FONT_WIDTH*14)>>1)), 88+64-FONT_HEIGHT-4, BLACK, "B: Yes | X: No");
+  }
 }
 
 static void selectFile();
 
-static void handleInput(uint32_t buttonStates, uint32_t buttonPresses) {
-  if(buttonPresses) {
-    clearError();
-  }
-  
+static void handleInputBase(uint32_t buttonStates, uint32_t buttonPresses) {
   if(buttonPresses & DOWN && selected < (currentDirectoryLength-1)) {
     selected++;
     if(selected >= MAX_ON_SCREEN) {
@@ -509,6 +513,48 @@ static void handleInput(uint32_t buttonStates, uint32_t buttonPresses) {
     }
     triggerRender();
   }
+
+  if(buttonPresses & Y && canFlash) {
+    seekConfirmation = true;
+    triggerRender();
+  }
+}
+
+static void handleInputConfirmFlash(uint32_t buttonStates, uint32_t buttonPresses) {
+  if(buttonPresses & X) {
+    seekConfirmation = false;
+    triggerRender();
+    return;
+  }
+
+  if(buttonPresses & B) {
+    FileList* selectedFile = nth(currentDirectoryListing, selected);
+    if(selectedFile == NULL) {
+      return;
+    }
+
+    append(currentPath, newLink(selectedFile->name, true, NULL));
+    char* path = pathFromList(currentPath, false);
+    pop(currentPath);
+
+    flashKernelFromFile(path);
+    
+    seekConfirmation = false;
+    triggerRender();
+  }
+}
+
+static void handleInput(uint32_t buttonStates, uint32_t buttonPresses) {
+  if(buttonPresses) {
+    clearError();
+  }
+
+  if(seekConfirmation) {
+    handleInputConfirmFlash(buttonStates, buttonPresses);
+  } else {
+    handleInputBase(buttonStates, buttonPresses);
+  }
+  
 }
 
 static void selectFile() {

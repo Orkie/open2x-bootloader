@@ -8,6 +8,51 @@
 int prepareImage(void* img, uint32_t* entry);
 int gunzip(uint8_t* data, unsigned int length, void* dest);
 
+int flashKernelFromFile(char* path) {
+  FILE* fp = fopen(path, "rb");
+  if(fp == NULL) {
+    showError("Could not open file");
+    printf("Could not open file %s\n", path);
+    return 1;
+  }
+
+  fseek(fp, 0L, SEEK_END);
+  int size = ftell(fp);
+  rewind(fp);
+
+  if(size > KERNEL_REGION_BYTES) {
+    showError("File too large");
+    printf("File too large for kernel region of NAND, can be no more than 0x%x bytes\n", KERNEL_REGION_BYTES);
+    fclose(fp);
+    return 2;
+  }
+
+  void* buf = malloc(KERNEL_REGION_BYTES);
+  if(buf == NULL) {
+    fclose(fp);
+    showError("Could not read file");
+    printf("File too large to read\n");
+    return 3;
+  }
+  memset(buf, 0xff, KERNEL_REGION_BYTES);
+  
+  if(fread(buf, sizeof(uint8_t), size, fp) != size) {
+    fclose(fp);
+    free(buf);
+    showError("Could not read file");
+    printf("Could not read img\n");
+    return 4;
+  }
+
+  printf("Loaded file %s\n", path);
+
+  flashKernel(buf);
+
+  fclose(fp);
+  free(buf);
+  return 0;
+}
+
 int flashKernel(void* image) {
   
   UbootHeader* header = (UbootHeader*) image;

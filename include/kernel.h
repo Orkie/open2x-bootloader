@@ -28,5 +28,6 @@ extern void* loadKernelFromNand();
 extern int launchKernel(void* image);
 extern int launchKernelFromNand();
 extern int flashKernel(void* image);
+extern int flashKernelFromFile(char* path);
 
 #endif

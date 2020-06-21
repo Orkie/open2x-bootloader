@@ -157,12 +157,13 @@ int main() {
 
   if((btnState()&L) && (btnState()&R)) {
     saveSettings();
+    printf("\nSettings reset\n");
     showError("Settings were reset");
   }
   
   loadSettings();
   
-  printf("\n\n**********************************\nOpen2x Bootloader %s\n**********************************\n", VERSION);
+  printf("\n**********************************\nOpen2x Bootloader %s\n**********************************\n", VERSION);
   printf("Auto boot NAND: %s\n", currentSettings.autobootNand ? "on" : "off");
   printf("Auto boot SD: %s\n", currentSettings.autobootSd ? "on" : "off");
   printf("**********************************\n");
@@ -277,7 +278,7 @@ void showError(const char* msg) {
 
 void blit(uint16_t* source, int sw, int sh, uint16_t* dest, int dx, int dy, int dw, int dh) {
   for(int y = sh ; y-- ; ) {
-    for(int x = sh ; x-- ; ) {
+    for(int x = sw ; x-- ; ) {
       uint16_t pixel = *(source + (sw*y) + x);
       if(pixel != MAGENTA) {
 	*(dest + ((dy+y)*dw) + (dx+x)) = pixel;
@@ -285,3 +286,22 @@ void blit(uint16_t* source, int sw, int sh, uint16_t* dest, int dx, int dy, int 
     }
   }
 }
+
+void drawBox(uint16_t* dest, int dw, int x, int y, int w, int h, uint16_t colour) {
+  for(int cy = h ; cy-- ; ) {
+    for(int cx = w ; cx-- ; ) {
+      *(dest + ((y+cy)*dw) + (x+cx)) = colour;
+    }
+  }
+}
+
+void drawBoxOutline(uint16_t* dest, int dw, int x, int y, int w, int h, uint16_t colour) {
+  for(int cy = h ; cy-- ; ) {
+    for(int cx = w ; cx-- ; ) {
+      if(cy == 0 || cy == (h-1) || cx == 0 || cx == (w-1)) {
+	*(dest + ((y+cy)*dw) + (x+cx)) = colour;
+      }
+    }
+  }
+}
+
