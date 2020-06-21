@@ -411,6 +411,9 @@ static void render(uint16_t* fb) {
   free(path);
 
   uint16_t icon[16*16];
+  for(int i = 16*16 ; i-- ; ) {
+    icon[i] = MAGENTA;
+  }
   char name[32];
   canFlash = false;
   memset(name, '\0', 32);
