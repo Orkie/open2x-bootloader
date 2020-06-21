@@ -228,6 +228,8 @@ void doFlash() {
   }
   
   flashKernelFromFile(arg);
+
+  fatUnmount("sd");  
 }
 
 void doKernel() {

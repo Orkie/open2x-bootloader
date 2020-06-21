@@ -167,16 +167,6 @@ int main() {
   printf("Auto boot NAND: %s\n", currentSettings.autobootNand ? "on" : "off");
   printf("Auto boot SD: %s\n", currentSettings.autobootSd ? "on" : "off");
   printf("**********************************\n");
-
-  // TODO - look at brief screen corruption if file is missing
-  if(currentSettings.autobootNand && !(btnState()&START)) {
-    launchKernelFromNand();
-    showError("Failed to launch kernel");
-  }
-
-  if(currentSettings.autobootSd && !(btnState()&START)) {
-    O2xInterpreter.def.internal->launch("sd:/autoboot.o2x", NULL);
-  }
   
   uint16_t* fb0 = malloc(320*240*2);
   uint16_t* fb1 = malloc(320*240*2);
@@ -191,6 +181,19 @@ int main() {
   rgbToggleRegion(REGION1, true);
   rgbSetFont((uint16_t*)font_bin, FONT_WIDTH, FONT_HEIGHT);
 
+  // TODO - look at brief screen corruption if file is missing
+  if(currentSettings.autobootNand && !(btnState()&R)) {
+    launchKernelFromNand();
+    showError("Failed to launch kernel");
+  }
+
+  if(currentSettings.autobootSd && !(btnState()&R)) {
+    if(fatInitDefault()) {
+      O2xInterpreter.def.internal->launch("sd:/autoboot.o2x", NULL);
+      fatUnmount("sd");      
+    }
+  }  
+  
   transitionView(&MainMenu);
 
   uint16_t* currentFb = fb0;

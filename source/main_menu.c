@@ -51,7 +51,7 @@ static void handleInput(uint32_t buttonStates, uint32_t buttonPresses) {
     triggerRender();
   }
 
-  if(buttonPresses & B || buttonPresses & START) {
+  if(buttonPresses & B) {
     if(menu[selected].callback != NULL) {
       menu[selected].callback();
     }
