@@ -6,4 +6,4 @@ Able to compile as a uboot kernel, and save the settings to SD instead of NAND f
 
 LCD adjustment for F100 as per GPH firmware?
 
-Investigate why you can't boot a kernel right after flashing it without rebooting - probably something in NAND driver
+Investigate why you can't boot a kernel right after flashing it without rebooting - probably something in NAND driver, need to poll status and check not busy I'd guess
