@@ -84,7 +84,7 @@ else
 	export LD	:=	$(CXX)
 endif
 
-export OFILES	:=	$(BINFILES:.bin=.o) $(BMPFILES:.bmp=.o)\
+export OFILES	:=	$(BINFILES:.bin=.o) $(BMPFILES:.bmp=.bin.o)\
 					$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
 
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
@@ -133,7 +133,7 @@ $(OUTPUT).elf	:	$(OFILES)
 	bmp2bin -q $< $@
 
 #---------------------------------------------------------------------------------
-%.o	:	%.bin
+%.bin.o	:	%.bin
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	@$(bin2o)

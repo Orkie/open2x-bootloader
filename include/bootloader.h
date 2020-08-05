@@ -1,6 +1,7 @@
 #ifndef __BOOTLOADER_H__
 #define __BOOTLOADER_H__
 #include <orcus.h>
+#include <nand.h>
 #include <gp2xregs.h>
 #include <gp2xtypes.h>
 #include "kernel.h"
