@@ -156,7 +156,7 @@ static char* pathFromList(FileList* list, bool isDirectory) {
 
 static FileList* currentPath;
 static FileList* currentDirectoryListing = NULL;
-static int currentDirectoryLength = 0;
+static int currentDirectoryLength = 1; // for some reason this gets inlined as a local variable if assigned to 0 by default
 
 static FileList* updateCurrentDirectoryListing() {
   if(currentDirectoryListing != NULL) {

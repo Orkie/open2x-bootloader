@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include "bootloader.h"
 
+#define BUFFER_SIZE 12288
+
 #define O2X_MAGIC 0x3178326F
 
 typedef struct {
@@ -78,9 +80,19 @@ int launchO2xFile(FILE* fp, char* path, char* arg) {
     // TODO - we need to really check if we are going to overwrite ourselves here, and load to memory then run a small piece of PIC code which copies it to its final destination
 
     uint32_t* dest = (uint32_t*) sectionHeader.loadAddress;
-    if(fread(dest, sizeof(uint8_t), sectionHeader.length, fp) != sectionHeader.length) {
-      showError("Could not read from file");
-      return 6;
+    uint8_t buf[BUFFER_SIZE];
+    uint32_t remainingBytes = sectionHeader.length;
+    uint8_t* writeTo = (uint8_t*) sectionHeader.loadAddress;
+    while(remainingBytes != 0) {
+      unsigned int toRead = remainingBytes > BUFFER_SIZE ? BUFFER_SIZE : remainingBytes;
+      if(fread(buf, sizeof(uint8_t), toRead, fp) != toRead) {
+	showError("Could not read from file");
+	return 6;
+      }
+
+      memcpy(writeTo, buf, (remainingBytes > BUFFER_SIZE) ? BUFFER_SIZE : remainingBytes);
+      writeTo += BUFFER_SIZE;
+      remainingBytes = remainingBytes > BUFFER_SIZE ? remainingBytes - BUFFER_SIZE : 0;
     }
 
     // first section is special, it is the entry point for the 920t, we need to copy its vector table into place
@@ -98,6 +110,9 @@ int launchO2xFile(FILE* fp, char* path, char* arg) {
   }
 
   uartPrintf("Jumping to 0x%x\n", jumpTo);
+  mmuDisable();
+  cacheDisableI();
+  cacheInvalidateDI(); // TODO - this needs to be a flush, not an invalidate
   JMP(jumpTo);
   return 1;// we should never reach here
 }
