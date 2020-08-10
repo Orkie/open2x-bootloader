@@ -4,7 +4,8 @@
 #include <unistd.h>
 #include "bootloader.h"
 
-#define BUFFER_SIZE 12288
+// Data cache is 16K
+#define BUFFER_SIZE 15*1024
 
 #define O2X_MAGIC 0x3178326F
 
@@ -110,9 +111,10 @@ int launchO2xFile(FILE* fp, char* path, char* arg) {
   }
 
   uartPrintf("Jumping to 0x%x\n", jumpTo);
+  cacheCleanD();
   mmuDisable();
   cacheDisableI();
-  cacheInvalidateDI(); // TODO - this needs to be a flush, not an invalidate
+  cacheInvalidateDI();
   JMP(jumpTo);
   return 1;// we should never reach here
 }

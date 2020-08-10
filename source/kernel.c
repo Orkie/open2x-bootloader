@@ -88,7 +88,12 @@ int launchKernel(void* image) {
   int result = prepareImage(image, &entry);
   if(!result) {
     uartPrintf("Executing kernel at 0x%x\n", entry);
-    
+
+    cacheCleanD();
+    mmuDisable();
+    cacheDisableI();
+    cacheInvalidateDI();
+
     asm volatile("ldr r0, =0x0");
     asm volatile("ldr r1, =395");
     asm volatile("ldr r2, =0x0");

@@ -153,6 +153,7 @@ uint32_t decideNewPresses(uint32_t current, uint32_t last, struct ButtonHeldTime
 
 int main() {
   gp2xInit();
+  mmuCachesInitOn();
   setbuf(stdout, NULL);
 
   if((btnState()&L) && (btnState()&R)) {
