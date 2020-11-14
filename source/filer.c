@@ -15,6 +15,9 @@ typedef struct FileList {
 } FileList;
 
 static int length(FileList* list) {
+  if(list == NULL) {
+    return 0;
+  }
   int i = 1;
   FileList* current = list;
   while((current = current->next) != NULL) {    
